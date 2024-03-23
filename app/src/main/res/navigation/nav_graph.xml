@@ -3,26 +3,39 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/FirstFragment"
         android:name="com.example.turtle.FirstFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
-
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
     </fragment>
+
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.turtle.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
+        android:id="@+id/loginFragment"
+        android:name="com.example.turtle.LoginFragment"
+        android:label="LoginFragment" >
 
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            android:id="@+id/action_loginFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_RegisterFragment"
+            app:destination="@id/registerFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.turtle.RegisterFragment"
+        android:label="RegisterFragment" >
+
+        <!-- Add this action to navigate to the LoginFragment -->
+        <action
+            android:id="@+id/action_registerFragment_to_LoginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+
+
+
 </navigation>
