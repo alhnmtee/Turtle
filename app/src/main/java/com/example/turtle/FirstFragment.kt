@@ -5,6 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.turtle.databinding.FragmentFirstBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -32,8 +35,11 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.buttonLogout.setOnClickListener {
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo(R.id.FirstFragment, true)
+                .build()
             FirebaseAuth.getInstance().signOut()
-            findNavController().navigate(R.id.action_FirstFragment_to_LoginFragment)
+            findNavController().navigate(R.id.action_FirstFragment_to_LoginFragment, null, navOptions)
         }
 
     }

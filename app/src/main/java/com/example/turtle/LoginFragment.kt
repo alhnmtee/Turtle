@@ -81,24 +81,33 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.buttonRegister.setOnClickListener {
+            findNavController().navigate(R.id.action_loginFragment_to_RegisterFragment)
+        }
+
         binding.login.setOnClickListener {
             val email = binding.username.text.toString()
             val password = binding.password.text.toString()
+            try {
+                auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Toast.makeText(context, "Authentication successful.", Toast.LENGTH_SHORT).show()
 
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(context, "Authentication successful.", Toast.LENGTH_SHORT).show()
+                            val navOptions = NavOptions.Builder()
+                                .setPopUpTo(R.id.loginFragment, true)
+                                .build()
+                            findNavController().navigate(R.id.action_loginFragment_to_FirstFragment,null,navOptions)
+                        } else {
 
-                        val navOptions = NavOptions.Builder()
-                            .setPopUpTo(R.id.loginFragment, true)
-                            .build()
-                        findNavController().navigate(R.id.action_loginFragment_to_FirstFragment,null,navOptions)
-                    } else {
-
-                        Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                }
+            }
+            catch (e: Exception) {
+                Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+            }
+
         }
     }
 }
