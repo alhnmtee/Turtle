@@ -10,7 +10,16 @@
         android:name="com.example.turtle.FirstFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
+
+        <action
+            android:id="@+id/action_FirstFragment_to_LoginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
+
+
+
 
     <fragment
         android:id="@+id/loginFragment"
