@@ -1,59 +1,89 @@
 package com.example.turtle
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
-import com.example.turtle.databinding.ActivityMainBinding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Text
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import data.WordleViewModel
 
+
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContent{
+            val viewModel = hiltViewModel<WordleViewModel>()
+            val state by viewModel.state.collectAsState()
+            val isConnecting by viewModel.isConnecting.collectAsState()
+            val showConnectionError by viewModel.showConnectionError.collectAsState()
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+            if(showConnectionError){
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
 
-        setSupportActionBar(binding.toolbar)
+                ){
+                    Text(
+                        color = Color.White,
+                        text = "Serverla bağlantı kurulamadı"
+                    )
+                }
+                return@setContent
+            }
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ){
+                //oyun alanı şeysi
+                Column{
+                    if(!state.connectedPlayers.contains('1')){
+                        Text(
+                            text = "1. oyuncu için bekleniyor"
+                        )
+                    }
+                    else if(!state.connectedPlayers.contains('2')){
+                        Text(
+                            text = "1. oyuncu için bekleniyor"
+                        )
+                    }
+                    else{
+                        Text(
+                            text = "deeveye sormuşlar .. "
+                        )
+                    }
+                }
+            }
+            if(isConnecting){
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White),
+                        contentAlignment = Alignment.Center
+                ){
+                    CircularProgressIndicator()
+                }
+            }
 
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
-
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
         }
+
+
+
+
+
+
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
-    }
 }
