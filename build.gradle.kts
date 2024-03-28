@@ -6,7 +6,7 @@ buildscript{
     }
     dependencies{
         //classpath("com.google.dagger:hilt-android:2.51")
-        classpath(libs.kotlin.serialization)
+        classpath("org.jetbrains.kotlin:kotlin-serialization:1.9.23")
     }
 }
 plugins {

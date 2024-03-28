@@ -50,17 +50,20 @@ class MainActivity : AppCompatActivity() {
                 Column{
                     if(!state.connectedPlayers.contains('1')){
                         Text(
-                            text = "1. oyuncu için bekleniyor"
+                            text = "1. oyuncu için bekleniyor",
+                            color = Color.White
                         )
                     }
                     else if(!state.connectedPlayers.contains('2')){
                         Text(
-                            text = "1. oyuncu için bekleniyor"
+                            text = "1. oyuncu için bekleniyor",
+                            color =Color.White,
                         )
                     }
                     else{
                         Text(
-                            text = "deeveye sormuşlar .. "
+                            text = "deeveye sormuşlar .. ",
+                            color = Color.White
                         )
                     }
                 }
