@@ -12,9 +12,6 @@ fun Application.configureRouting() {
     routing {
         socket(game)
     }
-
-
-        
         // Static plugin. Try to access `/static/index.html`
         //static("/static") {
         //    resources("static")

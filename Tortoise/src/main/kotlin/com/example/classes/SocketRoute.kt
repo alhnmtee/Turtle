@@ -28,6 +28,7 @@ fun Route.socket(game : WordleGame){
 
             }
             finally{
+                game.disconnectPlayer(player)
 
             }
 

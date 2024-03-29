@@ -4,9 +4,8 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.*
 import com.example.classes.GameState
+import io.ktor.websocket.*
 import java.util.concurrent.ConcurrentHashMap
-import io.ktor.websocket.WebSocketSession
-import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
 
 class WordleGame(
@@ -44,13 +43,13 @@ class WordleGame(
         return player
     }
 
-    fun disconnectPlayer(player : Char){
+    fun disconnectPlayer(player: Char) {
         playerSockets.remove(player)
-        state.update { 
-            it.copy(
-                connectedPlayers = it.connectedPlayers - player
-            )
-         }
+        state.update { it.copy(connectedPlayers = it.connectedPlayers - player) }
+
+        gameScope.launch {
+            playerSockets[player]?.close()
+        }
     }
 
     suspend fun broadcast(state: GameState) {
