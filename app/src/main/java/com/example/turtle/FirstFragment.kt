@@ -1,3 +1,6 @@
+package com.example.turtle
+
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,18 +14,8 @@ import com.example.turtle.databinding.FragmentFirstBinding
 import com.google.firebase.auth.FirebaseAuth
 import io.ktor.client.HttpClient
 import io.ktor.client.features.websocket.WebSockets
-import io.ktor.client.features.websocket.webSocket
-import io.ktor.http.HttpMethod
-import io.ktor.http.URLProtocol
-import io.ktor.http.cio.websocket.Frame
-import io.ktor.http.cio.websocket.close
-import io.ktor.http.cio.websocket.readText
-import io.ktor.http.cio.websocket.send
-import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
-class FirstFragment : Fragment() {
+class FirstFragment : Fragment(R.layout.fragment_first) {
     private var _binding: FragmentFirstBinding? = null
     private val binding get() = _binding!!
 
@@ -47,23 +40,28 @@ class FirstFragment : Fragment() {
             FirebaseAuth.getInstance().signOut()
             findNavController().navigate(R.id.action_FirstFragment_to_LoginFragment, null, navOptions)
         }
-        binding.buttonFirst.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    client.webSocket(
-                        method = HttpMethod.Get,
-                        host = "10.0.2.2",
-                        port = 8080,
-                        path = "/room"
-                    ) {
-                        println("Connected to server")
-                    }
-                } catch (e: Exception) {
-                    // Bağlantı hatası durumunda yapılacak işlemler
-                }
-            }
+        binding.gameMode.setOnClickListener {
+            saveGameMode("random")
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo(R.id.FirstFragment, true)
+                .build()
+            findNavController().navigate(R.id.action_FirstFragment_to_RandomMode, null, navOptions)
         }
+        binding.normalMode.setOnClickListener {
+            saveGameMode("normal")
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo(R.id.FirstFragment, true)
+                .build()
+            findNavController().navigate(R.id.action_FirstFragment_to_RandomMode, null, navOptions)
+        }
+    }
 
+    private fun saveGameMode(mode: String) {
+        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
+        with (sharedPref.edit()) {
+            putString(getString(R.string.saved_game_mode), mode)
+            apply()
+        }
     }
 
     override fun onDestroyView() {
