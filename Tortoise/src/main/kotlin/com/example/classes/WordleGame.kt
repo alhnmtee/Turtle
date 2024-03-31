@@ -4,9 +4,8 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.*
 import com.example.classes.GameState
+import io.ktor.websocket.*
 import java.util.concurrent.ConcurrentHashMap
-import io.ktor.websocket.WebSocketSession
-import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
 
 class WordleGame(
@@ -19,7 +18,7 @@ class WordleGame(
     private val playerSockets = ConcurrentHashMap<String , WebSocketSession>()
 
     private val gameScope  = CoroutineScope(SupervisorJob()+Dispatchers.IO )
-    
+
     //oyun başu gameId oluşturup oyunculara gönderilecek ve buna göre bağlanıcak
 
     init{
@@ -66,5 +65,5 @@ class WordleGame(
 
     //TODO oyun mantığı buraya state'ı düzenleyerek ve kontrol ederek yapılacak
 
-    
+
 }

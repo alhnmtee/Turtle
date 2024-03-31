@@ -1,5 +1,6 @@
 package com.example.plugins
 
+import WordleGame
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.response.*
@@ -25,7 +26,7 @@ fun Application.configureRouting() {
         socketRoom(room3)
 
 
-        
+
         val room4 = Room(letterCount = 6,gameMode = "Random")
         socketRoom(room4)
 
@@ -35,7 +36,7 @@ fun Application.configureRouting() {
         val room6= Room(letterCount = 4,gameMode = "Random")
         socketRoom(room6)
     }
-    
-   
+
+
 }
 
