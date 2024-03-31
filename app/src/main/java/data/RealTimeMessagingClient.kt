@@ -1,5 +1,6 @@
 package data
 
+import com.example.classes.GameState
 import kotlinx.coroutines.flow.Flow
 
 interface RealTimeMessagingClient {
