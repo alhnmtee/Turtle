@@ -21,7 +21,6 @@ import javax.inject.Inject
 class WordleViewModel @Inject constructor(
     private val client: RealTimeMessagingClient
 ):ViewModel(){
-    private val letterCount = 4
     val state = client
         .getGameStateStream()
         .onStart { _isConnecting.value = true }

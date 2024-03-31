@@ -48,13 +48,13 @@ class MainActivity : AppCompatActivity() {
             ){
                 //oyun alanı şeysi
                 Column{
-                    if(!state.connectedPlayers.contains('1')){
+                    if(!state.connectedPlayers.contains("1")){
                         Text(
                             text = "1. oyuncu için bekleniyor",
                             color = Color.White
                         )
                     }
-                    else if(!state.connectedPlayers.contains('2')){
+                    else if(!state.connectedPlayers.contains("2")){
                         Text(
                             text = "1. oyuncu için bekleniyor",
                             color =Color.White,

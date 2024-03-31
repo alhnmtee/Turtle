@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GameState(
-    val connectedPlayers: List<Char> = emptyList() ,
+    val connectedPlayers: List<String> = emptyList() ,
     val letterCount : Int
 ) {
 

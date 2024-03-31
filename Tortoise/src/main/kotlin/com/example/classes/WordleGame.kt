@@ -10,21 +10,25 @@ import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
 
 class WordleGame(
-    val letterCount : Int
+    val gameMode : String,
+    val letterCount : Int,
+    val gameId : Int,
 ){
-    private val state = MutableStateFlow(GameState(letterCount = letterCount))
+    private val state = MutableStateFlow(GameState())
 
-    private val playerSockets = ConcurrentHashMap<Char , WebSocketSession>()
+    private val playerSockets = ConcurrentHashMap<String , WebSocketSession>()
 
     private val gameScope  = CoroutineScope(SupervisorJob()+Dispatchers.IO )
+    
+    //oyun başu gameId oluşturup oyunculara gönderilecek ve buna göre bağlanıcak
 
     init{
         state.onEach(::broadcast).launchIn(gameScope)
     }
 
-    fun connectPlayer(session:WebSocketSession):Char?{
-        val isPlayer1 = state.value.connectedPlayers.any{ it  == '1'}
-        val player = if(isPlayer1) '2' else '1'
+    fun connectPlayer(session:WebSocketSession):String?{
+        val isPlayer1 = state.value.connectedPlayers.any{ it  == "1"}
+        val player = if(isPlayer1) "2" else "1"
 
         state.update{
             if(state.value.connectedPlayers.contains(player)){
@@ -37,16 +41,14 @@ class WordleGame(
             it.copy(
                 connectedPlayers = it.connectedPlayers + player
             )
-
-            
         }
 
         return player
     }
 
-    fun disconnectPlayer(player : Char){
+    fun disconnectPlayer(player : String){
         playerSockets.remove(player)
-        state.update { 
+        state.update {
             it.copy(
                 connectedPlayers = it.connectedPlayers - player
             )
@@ -61,6 +63,8 @@ class WordleGame(
             socket.send(frame)
         }
     }
+
+    //TODO oyun mantığı buraya state'ı düzenleyerek ve kontrol ederek yapılacak
 
     
 }
