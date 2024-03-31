@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/FirstFragment"
@@ -12,17 +12,89 @@
         tools:layout="@layout/fragment_first">
 
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_FirstFragment_to_LoginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+
+        <action android:id="@id/action_loginFragment_to_RegisterFragment"
+            app:destination="@id/registerFragment"
+            app:popUpTo="@id/registerFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_FirstFragment_to_RandomMode"
+            app:destination="@id/randomModeFragment" />
+
     </fragment>
+
+
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.turtle.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
+        android:id="@+id/randomModeFragment"
+        android:name="com.example.turtle.RandomMode"
+        android:label="random_mode_fragment_label"
+        tools:layout="@layout/random_mode" >
 
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            android:id="@+id/action_randomModeFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/action_randomModeFragment_to_randomGameRoomsFragment"
+            app:destination="@id/randomGameRoomsFragment" />
+        <action
+            android:id="@+id/action_randomModeFragment_to_normalGameRoomsFragment"
+            app:destination="@id/normalGameRoomsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameRoomsFragment"
+        android:name="com.example.turtle.GameRooms"
+        android:label="game_rooms_fragment_label"
+        tools:layout="@layout/game_rooms" >
+        <action
+            android:id="@+id/action_gameRoomsFragment_to_randomModeFragment"
+            app:destination="@id/randomModeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/randomGameRoomsFragment"
+        android:name="com.example.turtle.RandomGameRooms"
+        android:label="random_game_rooms_fragment_label"
+        tools:layout="@layout/random_game_rooms" >
+        <action
+            android:id="@+id/action_randomGameRoomsFragment_to_randomModeFragment"
+            app:destination="@id/randomModeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/normalGameRoomsFragment"
+        android:name="com.example.turtle.NormalGameRooms"
+        android:label="normal_game_rooms_fragment_label"
+        tools:layout="@layout/normal_game_rooms" >
+        <action
+            android:id="@+id/action_normalGameRoomsFragment_to_randomModeFragment"
+            app:destination="@id/randomModeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.turtle.LoginFragment"
+        android:label="LoginFragment" >
+
+        <action
+            android:id="@+id/action_loginFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_RegisterFragment"
+            app:destination="@id/registerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.turtle.RegisterFragment"
+        android:label="RegisterFragment" >
+
+        <action
+            android:id="@+id/action_registerFragment_to_LoginFragment"
+            app:destination="@id/loginFragment" />
     </fragment>
 </navigation>

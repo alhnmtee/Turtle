@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "2049505953",
+    "project_id": "turtle-a8b4d",
+    "storage_bucket": "turtle-a8b4d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2049505953:android:8f6507583899294050cee0",
+        "android_client_info": {
+          "package_name": "com.example.turtle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYmP6cm6S2TDTY3p3kLo1mm1fXIOdy_U8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

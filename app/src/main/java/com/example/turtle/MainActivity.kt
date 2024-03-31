@@ -21,72 +21,44 @@ import data.WordleViewModel
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent{
-            val viewModel = hiltViewModel<WordleViewModel>()
-            val state by viewModel.state.collectAsState()
-            val isConnecting by viewModel.isConnecting.collectAsState()
-            val showConnectionError by viewModel.showConnectionError.collectAsState()
 
-            if(showConnectionError){
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-                ){
-                    Text(
-                        color = Color.White,
-                        text = "Serverla bağlantı kurulamadı"
-                    )
-                }
-                return@setContent
-            }
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ){
-                //oyun alanı şeysi
-                Column{
-                    if(!state.connectedPlayers.contains("1")){
-                        Text(
-                            text = "1. oyuncu için bekleniyor",
-                            color = Color.White
-                        )
-                    }
-                    else if(!state.connectedPlayers.contains("2")){
-                        Text(
-                            text = "1. oyuncu için bekleniyor",
-                            color =Color.White,
-                        )
-                    }
-                    else{
-                        Text(
-                            text = "deeveye sormuşlar .. ",
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-            if(isConnecting){
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White),
-                        contentAlignment = Alignment.Center
-                ){
-                    CircularProgressIndicator()
-                }
-            }
+        setSupportActionBar(binding.toolbar)
 
-        }
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
 
-
-
-
-
+        appBarConfiguration = AppBarConfiguration(navController.graph)
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        return navController.navigateUp(appBarConfiguration)
+                || super.onSupportNavigateUp()
+    }
 }
