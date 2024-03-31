@@ -7,14 +7,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
-import data.GameState
+import com.example.classes.GameState
 
 
 //TODO wordle oynanış kısmı burada olucak
 @Composable
 fun WordleField (
     state : GameState,
-    modifier:Modifier = Modifier,
+    modifier: Modifier = Modifier,
 ){
     Canvas(
         modifier = modifier,

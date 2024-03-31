@@ -2,6 +2,7 @@ package data
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.classes.GameState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,11 +26,11 @@ class WordleViewModel @Inject constructor(
         .getGameStateStream()
         .onStart { _isConnecting.value = true }
         .onEach { _isConnecting.value=false }
-        .catch { t-> _showConnectionError.value = t is ConnectException }
+        .catch { t : Exception -> _showConnectionError.value = t is ConnectException }
         .stateIn(
             scope = viewModelScope ,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = GameState(letterCount = letterCount)
+            initialValue = GameState()
         )
 
     private val _isConnecting = MutableStateFlow(false)

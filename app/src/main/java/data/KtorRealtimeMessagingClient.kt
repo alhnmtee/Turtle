@@ -1,5 +1,6 @@
 package data
 
+import com.example.classes.GameState
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.url
