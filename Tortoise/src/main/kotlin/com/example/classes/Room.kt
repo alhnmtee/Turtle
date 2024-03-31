@@ -4,34 +4,31 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.*
 import com.example.classes.GameState
+import com.example.classes.RoomState
 import java.util.concurrent.ConcurrentHashMap
+import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
-
-class WordleGame(
+var playerCount :Int = 1
+class Room(
     val gameMode : String,
-    val letterCount : Int,
-    val gameId : Int,
+    val letterCount:Int
 ){
-    private val state = MutableStateFlow(GameState())
+    private val state = MutableStateFlow(RoomState())
 
     private val playerSockets = ConcurrentHashMap<String , WebSocketSession>()
 
-    private val gameScope  = CoroutineScope(SupervisorJob()+Dispatchers.IO )
-    
-    //oyun başu gameId oluşturup oyunculara gönderilecek ve buna göre bağlanıcak
+    private val roomScope  = CoroutineScope(SupervisorJob()+Dispatchers.IO )
 
     init{
-        state.onEach(::broadcast).launchIn(gameScope)
+        state.onEach(::broadcast).launchIn(roomScope)
     }
 
-    fun connectPlayer(session:WebSocketSession):String?{
-        val isPlayer1 = state.value.connectedPlayers.any{ it  == "1"}
-        val player = if(isPlayer1) "2" else "1"
+    fun connectPlayer(session:WebSocketSession):String{
+        val player : String = playerCount.toString()
+        playerCount= playerCount+ 1
 
         state.update{
-            if(state.value.connectedPlayers.contains(player)){
-                return null
-            }
             if(!playerSockets.containsKey(player)){
                 playerSockets[player] = session
             }
@@ -53,16 +50,13 @@ class WordleGame(
          }
     }
 
-    suspend fun broadcast(state: GameState) {
+    suspend fun broadcast(state: RoomState) {
         val json = Json.encodeToString(state)
         val frame = Frame.Text(json)
-        
+
         playerSockets.values.forEach { socket ->
             socket.send(frame)
         }
     }
 
-    //TODO oyun mantığı buraya state'ı düzenleyerek ve kontrol ederek yapılacak
-
-    
-}
+}   
