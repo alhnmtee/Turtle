@@ -6,6 +6,7 @@ plugins {
     id ("kotlin-kapt")
     id ("dagger.hilt.android.plugin")
     id ("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -51,6 +52,14 @@ android {
 }
 
 dependencies {
+
+    implementation ("com.google.android.gms:play-services-auth:21.0.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
+    implementation("com.google.firebase:firebase-common-ktx:20.4.3")
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:2.9.9")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

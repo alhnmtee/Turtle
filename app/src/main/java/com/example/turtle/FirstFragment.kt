@@ -13,7 +13,7 @@ import com.example.turtle.R
 import com.example.turtle.databinding.FragmentFirstBinding
 import com.google.firebase.auth.FirebaseAuth
 import io.ktor.client.HttpClient
-import io.ktor.client.features.websocket.WebSockets
+import io.ktor.client.plugins.websocket.WebSockets
 
 class FirstFragment : Fragment(R.layout.fragment_first) {
     private var _binding: FragmentFirstBinding? = null

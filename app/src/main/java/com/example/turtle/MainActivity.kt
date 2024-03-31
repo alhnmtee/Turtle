@@ -1,22 +1,16 @@
 package com.example.turtle
 
 import android.os.Bundle
-import androidx.activity.compose.setContent
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
+import com.example.turtle.databinding.ActivityMainBinding
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
-import data.WordleViewModel
 
 
 @AndroidEntryPoint
@@ -30,6 +24,9 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setContentView(binding.root)
+
+        FirebaseApp.initializeApp(this)
 
         setSupportActionBar(binding.toolbar)
 

@@ -26,7 +26,7 @@ class WordleViewModel @Inject constructor(
         .getGameStateStream()
         .onStart { _isConnecting.value = true }
         .onEach { _isConnecting.value=false }
-        .catch { t : Exception -> _showConnectionError.value = t is ConnectException }
+        .catch { t -> _showConnectionError.value = t is ConnectException }
         .stateIn(
             scope = viewModelScope ,
             started = SharingStarted.WhileSubscribed(5000),
