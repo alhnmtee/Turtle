@@ -9,6 +9,7 @@ fun Route.socket(game : WordleGame){
     route("/play/${game.gameId}"){
         webSocket{
             val player = game.connectPlayer(this)
+        
 
             if(player == null){
                 close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT , " Zaten 2 Oyuncu var bu oyunda"))
@@ -32,7 +33,7 @@ fun Route.socket(game : WordleGame){
 
         }
     }
-
+   
 }
 
 fun Route.socketRoom(room : Room){
@@ -49,7 +50,7 @@ fun Route.socketRoom(room : Room){
                 }
             }
             catch( e : Exception){
-
+            
             }
             finally{
                 room.disconnectPlayer(player)
