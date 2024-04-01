@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         FirebaseApp.initializeApp(this)
 
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.hide()
 
         val navController = findNavController(R.id.nav_host_fragment_content_main)
 

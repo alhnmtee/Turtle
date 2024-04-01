@@ -28,7 +28,16 @@ class RegisterFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        binding.password.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                val password = binding.password.text.toString()
+                if (password.length < 8) {
+                    binding.password.error = "Password must be at least 8 characters"
+                }
+            } else {
+                binding.password.error = null
+            }
+        }
         binding.register.setOnClickListener {
             val email = binding.username.text.toString()
             val password = binding.password.text.toString()

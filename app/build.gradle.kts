@@ -60,7 +60,7 @@ dependencies {
     implementation("com.google.firebase:firebase-common-ktx:20.4.3")
     implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
     implementation("com.google.firebase:firebase-crashlytics-buildtools:2.9.9")
-
+    implementation ("androidx.cardview:cardview:1.0.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
