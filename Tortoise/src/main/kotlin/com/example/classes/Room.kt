@@ -24,11 +24,13 @@ class Room(
         state.onEach(::broadcast).launchIn(roomScope)
     }
 
-    fun connectPlayer(session:WebSocketSession):String{
-        val player : String = playerCount.toString()
-        playerCount= playerCount+ 1
+    fun connectPlayer(session:WebSocketSession , uId : String):String?{
+        val player = uId
 
         state.update{
+            if(state.value.connectedPlayers.contains(player)){
+                return null
+            }
             if(!playerSockets.containsKey(player)){
                 playerSockets[player] = session
             }
@@ -43,6 +45,7 @@ class Room(
 
     fun disconnectPlayer(player : String){
         playerSockets.remove(player)
+        playerCount= playerCount- 1
         state.update {
             it.copy(
                 connectedPlayers = it.connectedPlayers - player

@@ -1,6 +1,7 @@
 package data
 
-import com.example.classes.GameState
+import com.example.classes.RoomState
+import com.google.firebase.auth.FirebaseAuth
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.url
@@ -16,22 +17,23 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.Json
 
+//Bağlantı burada yapılıyor , bir flow oluşturuluyor ve AppModule adlı yerde de hilt'e sağlanıyor
 class KtorRealtimeMessagingClient (
     private val client: HttpClient
 ):RealTimeMessagingClient{
     private var session : WebSocketSession? = null
-    override fun getGameStateStream(): Flow<GameState> {
+    override fun getRoomStateStream(mode : String , letterCount : Int ): Flow<RoomState> {
         return flow{
             session = client.webSocketSession {
-                url("ws://192.168.56.1:8080/play")
-
+                url("ws://192.168.1.35:8080/room/${mode}/${letterCount}/${FirebaseAuth.getInstance().currentUser?.uid}")
             }
-            val gameStates = session!!
+            val roomStates = session!!
                 .incoming
                 .consumeAsFlow()
                 .filterIsInstance<Frame.Text>()
-                .mapNotNull { Json.decodeFromString<GameState>(it.readText()) }
-            emitAll(gameStates)
+                .mapNotNull { Json.decodeFromString<RoomState>(it.readText()) }
+
+            emitAll(roomStates)
         }
     }
 

@@ -12,6 +12,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import javax.inject.Singleton
 
+//hilt için ayarlar
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule{

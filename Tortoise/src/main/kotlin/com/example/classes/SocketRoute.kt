@@ -37,10 +37,15 @@ fun Route.socket(game : WordleGame){
 }
 
 fun Route.socketRoom(room : Room){
-    route("/${room.gameMode}/room/${room.letterCount}"){
+    route("/room/${room.gameMode}/${room.letterCount}/{userId}"){
         webSocket{
-            val player = room.connectPlayer(this)
-
+            val uId = call.parameters["userId"]
+            val player = room.connectPlayer(this,uId.toString())
+            if(player == null)
+            {
+                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT , "Bağlanılamadı"))
+                return@webSocket
+            }
             try{
                 incoming.consumeEach{ frame ->
                     if(frame is Frame.Text){

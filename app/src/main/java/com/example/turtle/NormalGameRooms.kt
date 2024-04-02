@@ -2,20 +2,115 @@ package com.example.turtle
 
 import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.turtle.databinding.NormalGameRoomsBinding
+import com.plcoding.onlinetictactoe.ui.theme.RoomsTheme
+import data.RoomViewModel
+import roomField.RoomField
 
 class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     private var _binding: NormalGameRoomsBinding? = null
     private val binding get() = _binding!!
 
+    private var wordSize : Int = 0
+    private var gameMode : String = ""
+
+    //compose arayüzünün yazıldığı fonksiyon
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val view = inflater.inflate(R.layout.normal_game_rooms, container, false)
+        val composeView = view.findViewById<ComposeView>(R.id.compose_view)
+
+        composeView.apply {
+            // Dispose of the Composition when the view's LifecycleOwner
+            // is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                RoomsTheme {
+                    val viewModel = hiltViewModel<RoomViewModel>()
+
+                    viewModel.setVars(gameMode.toString(),wordSize)
+                    viewModel.makeState()
+                    //state ' i çekiyoruz , önceki 2 fonksiyon state e url için veri göndermede kullanılıyor
+                    val state by viewModel.state.collectAsState()
+                    val isConnecting by viewModel.isConnecting.collectAsState()
+                    val showConnectionError by viewModel.showConnectionError.collectAsState()
+
+
+                    //hata var mı diye
+                    if(showConnectionError) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Server'la bağlantı kurulamadı",
+                                color = MaterialTheme.colors.error
+                            )
+                        }
+                        return@RoomsTheme
+                    }
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        //oyuncuların sıralandığı yer
+                        RoomField(
+                            state = state,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .padding(16.dp)
+                        )
+
+                        //bağlanılıyor dönen şey
+                        if (isConnecting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                            )
+                        }
+                    }
+
+
+                }
+
+            }
+        }
+        return view
+    }
+
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = NormalGameRoomsBinding.bind(view)
 
-        val wordSize = loadWordSize()
-        val gameMode = loadGameMode()
+        wordSize = loadWordSize()
+        gameMode = loadGameMode().toString()
+
         binding.gameModeAndWordSizeTextView.text = "Selected game mode: $gameMode, Word size: $wordSize"
     }
 
@@ -28,6 +123,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
         val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
         return sharedPref?.getString(getString(R.string.saved_game_mode), "")
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

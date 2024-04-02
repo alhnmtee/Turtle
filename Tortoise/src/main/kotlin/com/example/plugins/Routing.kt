@@ -14,26 +14,21 @@ import Room
 import com.example.plugins.configureHTTP
 
 fun Application.configureRouting() {
+    val room = Room(letterCount = 6,gameMode = "normal")
+    val room2 = Room(letterCount = 5,gameMode = "normal")
+    val room3= Room(letterCount = 4,gameMode = "normal")
+    
+    val room4 = Room(letterCount = 6,gameMode = "random")
+    val room5 = Room(letterCount = 5,gameMode = "random")
+    val room6= Room(letterCount = 4,gameMode = "random")
     routing{
-        //5 lik oda aç sonra 4 sonra 6 harflik , istenilen kişinin katılıp birbirini görebileceği odalar
-        val room = Room(letterCount = 6,gameMode = "Fixed")
+        
         socketRoom(room)
-
-        val room2 = Room(letterCount = 5,gameMode = "Fixed")
         socketRoom(room2)
-
-        val room3= Room(letterCount = 4,gameMode = "Fixed")
         socketRoom(room3)
-
-
-
-        val room4 = Room(letterCount = 6,gameMode = "Random")
+        
         socketRoom(room4)
-
-        val room5 = Room(letterCount = 5,gameMode = "Random")
         socketRoom(room5)
-
-        val room6= Room(letterCount = 4,gameMode = "Random")
         socketRoom(room6)
     }
 
