@@ -1,47 +1,141 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/game_mode_text_view"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/button_4_letters"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="4 Letters"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/game_mode_text_view"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:src="@drawable/vectorturtle"
+            android:layout_gravity="center" />
 
-    <Button
-        android:id="@+id/button_5_letters"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="5 Letters"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_4_letters"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <TextView
+            android:id="@+id/game_mode_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="Game Mode"
+            android:textStyle="bold"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
 
-    <Button
-        android:id="@+id/button_6_letters"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="6 Letters"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_5_letters"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView_4_letters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/letters4"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"/>
+
+                <Button
+                    android:id="@+id/button4Letters"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select 4 Letters Mode"
+                    android:textColor="#FFFFFF"
+                    android:background="#009688"
+                    android:layout_marginTop="16dp"
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="24dp"
+                    android:textAllCaps="false"
+                    android:layout_gravity="center_horizontal" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView_5_letters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/letters5"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"/>
+
+                <Button
+                    android:id="@+id/button5Letters"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select 5 Letters Mode"
+                    android:textColor="#FFFFFF"
+                    android:background="#FF5722"
+                    android:layout_marginTop="16dp"
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="24dp"
+                    android:textAllCaps="false"
+                    android:layout_gravity="center_horizontal" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView_6_letters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/letters5"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"/>
+
+                <Button
+                    android:id="@+id/button6Letters"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select 6 Letters Mode"
+                    android:textColor="#FFFFFF"
+                    android:background="#673AB7"
+                    android:layout_marginTop="16dp"
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="24dp"
+                    android:textAllCaps="false"
+                    android:layout_gravity="center_horizontal" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</ScrollView>

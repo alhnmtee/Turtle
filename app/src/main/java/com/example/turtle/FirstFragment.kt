@@ -40,14 +40,14 @@ class FirstFragment : Fragment(R.layout.fragment_first) {
             FirebaseAuth.getInstance().signOut()
             findNavController().navigate(R.id.action_FirstFragment_to_LoginFragment, null, navOptions)
         }
-        binding.gameMode.setOnClickListener {
+        binding.buttonRandomMode.setOnClickListener {
             saveGameMode("random")
             val navOptions = NavOptions.Builder()
                 .setPopUpTo(R.id.FirstFragment, true)
                 .build()
             findNavController().navigate(R.id.action_FirstFragment_to_RandomMode, null, navOptions)
         }
-        binding.normalMode.setOnClickListener {
+        binding.buttonUnrestrictedMode.setOnClickListener {
             saveGameMode("normal")
             val navOptions = NavOptions.Builder()
                 .setPopUpTo(R.id.FirstFragment, true)

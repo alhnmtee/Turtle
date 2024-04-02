@@ -47,16 +47,22 @@ class RegisterFragment : Fragment() {
         }
     }
     private fun registerUser(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    Snackbar.make(binding.root, "Registration successful!", Snackbar.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_registerFragment_to_LoginFragment)
-                } else {
-                    val errorMessage = task.exception?.message ?: "Registration failed!"
-                    Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_SHORT).show()
+        try {
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val user = auth.currentUser
+                        Snackbar.make(binding.root, "Registration successful!", Snackbar.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.action_registerFragment_to_LoginFragment)
+                    } else {
+                        val errorMessage = task.exception?.message ?: "Registration failed!"
+                        Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_SHORT).show()
+                    }
                 }
-            }
+        }
+        catch (e: Exception) {
+            Snackbar.make(binding.root, "Registration failed!", Snackbar.LENGTH_SHORT).show()
+        }
+
     }
 }

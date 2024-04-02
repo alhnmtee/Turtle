@@ -12,6 +12,7 @@ class GameRooms : Fragment(R.layout.game_rooms) {
 
         val wordSize = loadWordSize()
         // Use wordSize to filter game rooms and user list
+        //Kullanılmıyor sanırım...
     }
 
     private fun loadWordSize(): Int {
