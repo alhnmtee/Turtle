@@ -1,8 +1,7 @@
 package roomField
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -15,21 +14,17 @@ import com.example.classes.RoomState
 @Composable
 fun RoomField (
     state: RoomState,
-    modifier: Modifier = Modifier,
+    onPlayerClicked : (String) -> Unit
 ){
     // Odadaki oyuncların gösterilip , tıklama işlemi filan yaplıacağı yer burası
-    Column(modifier = modifier.fillMaxSize()) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            // You can draw any custom graphics here
-            // For simplicity, let's draw a background color
-            drawRect(color = Color.LightGray)
-        }
-
+    Column() {
         // Display connected players
         Text("Connected Players:", modifier = Modifier.padding(8.dp))
-        Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+        Column() {
             state.connectedPlayers.forEach { playerName ->
-                Text(text = playerName , color = Color.Black)
+                Text(text = playerName , color = Color.White , modifier = Modifier.clickable {
+                    onPlayerClicked(playerName)
+                })
 
             }
         }

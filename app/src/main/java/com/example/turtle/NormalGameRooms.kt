@@ -1,15 +1,14 @@
 package com.example.turtle
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.turtle.databinding.NormalGameRoomsBinding
@@ -31,8 +29,8 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     private var _binding: NormalGameRoomsBinding? = null
     private val binding get() = _binding!!
 
-    private var wordSize : Int = 0
-    private var gameMode : String = ""
+    private var wordSize : Int = 4
+    private var gameMode : String = "normal"
 
     //compose arayüzünün yazıldığı fonksiyon
     override fun onCreateView(
@@ -49,16 +47,16 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 RoomsTheme {
-                    val viewModel = hiltViewModel<RoomViewModel>()
 
-                    viewModel.setVars(gameMode.toString(),wordSize)
-                    viewModel.makeState()
+                    val viewModel = hiltViewModel<RoomViewModel>()
                     //state ' i çekiyoruz , önceki 2 fonksiyon state e url için veri göndermede kullanılıyor
                     val state by viewModel.state.collectAsState()
                     val isConnecting by viewModel.isConnecting.collectAsState()
                     val showConnectionError by viewModel.showConnectionError.collectAsState()
 
-
+                    Log.e(TAG, "onCreateView: ${state.connectedPlayers}", )
+                    val cu = state
+                    Log.e(TAG, "onCreateView: ${cu}", )
                     //hata var mı diye
                     if(showConnectionError) {
                         Box(
@@ -77,13 +75,13 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         contentAlignment = Alignment.Center
                     ) {
                         //oyuncuların sıralandığı yer
-                        RoomField(
-                            state = state,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .padding(16.dp)
-                        )
+                        Log.e(TAG, "onCreateView: ${state.connectedPlayers}", )
+                        if(state.connectedPlayers.isNotEmpty()){
+                            RoomField(state = state){playerName ->
+                                // Handle player clicks here
+                                Log.d(TAG, "Player clicked: $playerName")
+                            }
+                        }
 
                         //bağlanılıyor dönen şey
                         if (isConnecting) {
@@ -93,6 +91,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             )
                         }
                     }
+
 
 
                 }

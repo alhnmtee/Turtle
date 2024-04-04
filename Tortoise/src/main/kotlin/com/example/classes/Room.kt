@@ -9,10 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
-var playerCount :Int = 1
 class Room(
-    val gameMode : String,
-    val letterCount:Int
 ){
     private val state = MutableStateFlow(RoomState())
 
@@ -21,12 +18,26 @@ class Room(
     private val roomScope  = CoroutineScope(SupervisorJob()+Dispatchers.IO )
 
     init{
+        roomScope.launch {
+            // Emit a value every 10 seconds
+            flow {
+                while (true) {
+                    emit(Unit) // Emit a value
+                    delay(10000) // Delay for 10 seconds
+                }
+            }.onEach { broadcast(state.value) } // Call broadcast with the current state every 10 seconds
+            .launchIn(roomScope)
+        }
+    }
+
+    init{
         state.onEach(::broadcast).launchIn(roomScope)
+        
+       
     }
 
     fun connectPlayer(session:WebSocketSession , uId : String):String?{
         val player = uId
-
         state.update{
             if(state.value.connectedPlayers.contains(player)){
                 return null
@@ -45,7 +56,6 @@ class Room(
 
     fun disconnectPlayer(player : String){
         playerSockets.remove(player)
-        playerCount= playerCount- 1
         state.update {
             it.copy(
                 connectedPlayers = it.connectedPlayers - player
@@ -60,6 +70,55 @@ class Room(
         playerSockets.values.forEach { socket ->
             socket.send(frame)
         }
+    }
+
+    suspend fun sendGameRequest(uidSender : String,uidReciever:String){
+        //al json = Json.encodeToString(state)
+        state.update{
+            it.copy(
+                requests = it.requests + ("$uidSender" to "$uidReciever")
+            )
+        }
+    }
+
+    suspend fun confirmGameRequest(uidSender : String,uidReciever:String){
+            
+            state.update{
+
+                it.copy(
+                    requests = it.requests - ("$uidReciever")
+                )
+
+                it.copy(
+                    playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidSender
+                )
+                it.copy(
+
+                    playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever
+                )
+
+            }
+
+            
+    }
+
+    suspend fun putInsideLobby(uid:String,gameMode:String,letterCount:Int){
+        state.update{
+
+            val innerList = it.gameRooms[gameMode]?.get(letterCount)
+            val newGameRooms: Map<String, Map<Int, List<String>>> = it.gameRooms.mapValues { (key, value) ->
+                if (key == gameMode) {
+                    value + (letterCount to ((innerList ?: emptyList()) + uid))
+                } else {
+                    value
+                }
+            }
+            it.copy(
+                gameRooms = newGameRooms
+            )
+
+        }
+
     }
 
 }   

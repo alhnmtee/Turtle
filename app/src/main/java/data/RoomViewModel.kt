@@ -24,46 +24,23 @@ import javax.inject.Inject
 class RoomViewModel @Inject constructor(
     private val client: RealTimeMessagingClient,
     ):ViewModel(){
-    private var mode : String = ""
-    private var letterCount : Int= 0
-
-    fun setVars(mode : String,letterCount :Int)
-    {
-        this.mode = mode
-        this.letterCount = letterCount
-    }
-
-    //statee i oluşturuyoruz , bunu roomstate taban alınarak KtorRealtimeMessagingClient dan oluşturuyoruz yani bağlantı orda yapılıyor sonra buradan state i çekiyoruz
     var state : StateFlow<RoomState> = client
-        .getRoomStateStream(mode,letterCount)
+        .getRoomStateStream()
         .onStart { _isConnecting.value = true }
         .onEach { _isConnecting.value=false }
         .catch { t -> _showConnectionError.value = t is ConnectException }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RoomState())
+
+
+    //statee i oluşturuyoruz , bunu roomstate taban alınarak KtorRealtimeMessagingClient dan oluşturuyoruz yani bağlantı orda yapılıyor sonra buradan state i çekiyoruz
+
+
 
     private val _isConnecting = MutableStateFlow(false)
     val isConnecting = _isConnecting.asStateFlow()
 
     private val _showConnectionError = MutableStateFlow(false)
     val showConnectionError = _showConnectionError.asStateFlow()
-
-
-    fun makeState() {
-        this.state = client
-            .getRoomStateStream(mode,letterCount)
-            .onStart { _isConnecting.value = true }
-            .onEach { _isConnecting.value=false }
-            .catch { t -> _showConnectionError.value = t is ConnectException }
-            .stateIn(
-                scope = viewModelScope ,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = RoomState()
-            )
-    }
-
-
-
-
 
     @Override
     override fun onCleared(){
