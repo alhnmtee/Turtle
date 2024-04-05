@@ -19,18 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.fragment.app.viewModels
 import com.example.turtle.databinding.NormalGameRoomsBinding
 import com.plcoding.onlinetictactoe.ui.theme.RoomsTheme
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.withCreationCallback
 import data.RoomViewModel
+import data.RoomViewModelFactory
 import roomField.RoomField
 
+@AndroidEntryPoint
 class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     private var _binding: NormalGameRoomsBinding? = null
     private val binding get() = _binding!!
-
-    private var wordSize : Int = 4
-    private var gameMode : String = "normal"
 
     //compose arayüzünün yazıldığı fonksiyon
     override fun onCreateView(
@@ -48,9 +49,20 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
             setContent {
                 RoomsTheme {
 
-                    val viewModel = hiltViewModel<RoomViewModel>()
-                    //state ' i çekiyoruz , önceki 2 fonksiyon state e url için veri göndermede kullanılıyor
+                    val mode : String = loadGameMode().toString()
+                    val lc : Int = loadWordSize()
+
+                    val viewModel by viewModels<RoomViewModel>(
+                        extrasProducer = {
+                            defaultViewModelCreationExtras.withCreationCallback<
+                                    RoomViewModelFactory> { factory ->
+                                factory.create(mode,lc)
+                            }
+                        }
+                    )
+
                     val state by viewModel.state.collectAsState()
+
                     val isConnecting by viewModel.isConnecting.collectAsState()
                     val showConnectionError by viewModel.showConnectionError.collectAsState()
 
@@ -94,6 +106,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 
 
 
+
                 }
 
             }
@@ -107,8 +120,10 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
         super.onViewCreated(view, savedInstanceState)
         _binding = NormalGameRoomsBinding.bind(view)
 
-        wordSize = loadWordSize()
-        gameMode = loadGameMode().toString()
+
+
+        val wordSize = loadWordSize()
+        val gameMode = loadGameMode().toString()
 
         binding.gameModeAndWordSizeTextView.text = "Selected game mode: $gameMode, Word size: $wordSize"
     }
@@ -123,9 +138,9 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
         return sharedPref?.getString(getString(R.string.saved_game_mode), "")
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
+

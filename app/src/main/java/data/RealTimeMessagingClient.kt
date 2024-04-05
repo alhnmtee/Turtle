@@ -5,7 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 //KtorRealtimeMessagingClient için interface
 interface RealTimeMessagingClient {
-    fun getRoomStateStream() : Flow<RoomState>
+    fun getRoomStateStream(mode:String,letterCount:Int):Flow<RoomState>
+
+
     //TODO buraya oyunu bitrme ve kelime seçmenin suspend şeklinde class ve fonskiyonlaru da gelicek ama bunları serverda da yazmk gerekitor
     suspend fun close()
 }

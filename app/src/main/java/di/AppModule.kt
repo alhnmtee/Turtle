@@ -1,5 +1,6 @@
 package di
 
+
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,22 +13,30 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
 import javax.inject.Singleton
 
-//hilt için ayarlar
+
+// Hilt module settings
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule{
+object AppModule {
 
+    // Provides the HttpClient singleton
     @Singleton
     @Provides
-    fun provideHttpClient() : HttpClient{
-        return HttpClient(CIO){
+    fun provideHttpClient(): HttpClient {
+        return HttpClient(CIO) {
             install(Logging)
             install(WebSockets)
         }
     }
+
     @Singleton
     @Provides
-    fun provideRealTimeMessagingClient(httpClient : HttpClient) : RealTimeMessagingClient {
+    fun provideRealTimeMessagingClient(
+        httpClient: HttpClient,
+    ): RealTimeMessagingClient {
         return KtorRealtimeMessagingClient(httpClient)
     }
+
+
+
 }

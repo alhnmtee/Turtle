@@ -18,14 +18,15 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.json.Json
 
 //Bağlantı burada yapılıyor , bir flow oluşturuluyor ve AppModule adlı yerde de hilt'e sağlanıyor
-class KtorRealtimeMessagingClient (
-    private val client: HttpClient
+class KtorRealtimeMessagingClient(
+    private val client: HttpClient,
 ):RealTimeMessagingClient{
     private var session : WebSocketSession? = null
-    override fun getRoomStateStream(): Flow<RoomState> {
+
+    override fun getRoomStateStream(mode:String,letterCount:Int): Flow<RoomState> {
         return flow{
             session = client.webSocketSession {
-                url("ws://192.168.1.35:8080/room/${FirebaseAuth.getInstance().currentUser?.uid}")
+                url("ws://192.168.1.41:8080/room/$mode/$letterCount/${FirebaseAuth.getInstance().currentUser?.uid}")
             }
             val roomStates = session!!
                 .incoming
@@ -36,6 +37,8 @@ class KtorRealtimeMessagingClient (
             emitAll(roomStates)
         }
     }
+
+
 
 
 

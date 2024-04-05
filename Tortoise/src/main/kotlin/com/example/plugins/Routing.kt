@@ -13,12 +13,18 @@ import socketRoom
 import Room
 import com.example.plugins.configureHTTP
 
-fun Application.configureRouting() {
-    val rooms = Room()
+fun Application.configureRouting(room1 :Room,room2 :Room,room3 :Room,room4 :Room,room5 :Room,room6 :Room) {
+
     
     routing{
         
-        socketRoom(rooms)
+        socketRoom(room1,"normal",4)
+        socketRoom(room2,"normal",5)
+        socketRoom(room3,"normal",6)
+
+        socketRoom(room4,"random",4)
+        socketRoom(room5,"random",5)
+        socketRoom(room6,"random",6)
        
     }
 

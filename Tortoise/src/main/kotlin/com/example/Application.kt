@@ -1,5 +1,6 @@
 package com.example
 
+import Room
 import com.example.plugins.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -10,11 +11,18 @@ fun main() {
 }
 
 fun Application.module() {
+    val room1 = Room()
+    val room2 = Room()
+    val room3 = Room()
 
+    val room4 = Room()
+    val room5 = Room()
+    val room6 = Room()
+    
     configureSecurity()
     configureHTTP()
     configureMonitoring()
     configureSerialization()
     configureSockets()
-    configureRouting()
+    configureRouting(room1,room2,room3,room4,room5,room6)
 }

@@ -102,23 +102,6 @@ class Room(
             
     }
 
-    suspend fun putInsideLobby(uid:String,gameMode:String,letterCount:Int){
-        state.update{
-
-            val innerList = it.gameRooms[gameMode]?.get(letterCount)
-            val newGameRooms: Map<String, Map<Int, List<String>>> = it.gameRooms.mapValues { (key, value) ->
-                if (key == gameMode) {
-                    value + (letterCount to ((innerList ?: emptyList()) + uid))
-                } else {
-                    value
-                }
-            }
-            it.copy(
-                gameRooms = newGameRooms
-            )
-
-        }
-
-    }
+    
 
 }   
