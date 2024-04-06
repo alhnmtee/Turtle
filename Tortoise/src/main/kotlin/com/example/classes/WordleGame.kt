@@ -9,9 +9,6 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.*
 
 class WordleGame(
-    val gameMode : String,
-    val letterCount : Int,
-    val gameId : Int,
 ){
     private val state = MutableStateFlow(GameState())
 

@@ -67,6 +67,13 @@ class RoomViewModel @AssistedInject constructor(
         }
     }
 
+    public fun sendMsg(msg:String){
+        viewModelScope.launch{
+            client.sendServerMessage(msg)
+        }
+
+    }
+
     public override fun onCleared() {
         super.onCleared()
         job?.cancel() // Cancel the job when ViewModel is cleared

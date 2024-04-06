@@ -5,6 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.*
 import kotlinx.serialization.serializer
 import kotlinx.serialization.serializer
+import kotlinx.serialization.serializer
 import com.example.classes.GameState
 import com.example.classes.RoomState
 import java.util.concurrent.ConcurrentHashMap
@@ -28,6 +29,8 @@ class Room(
     private val playerSockets = ConcurrentHashMap<String , WebSocketSession>()
 
     private val roomScope  = CoroutineScope(SupervisorJob()+Dispatchers.IO )
+    
+    private val ongoingGames = ConcurrentHashMap<String,MutableStateFlow<RoomState>>()
 
     init {
         state.onEach(::broadcast).launchIn(roomScope)
@@ -52,18 +55,34 @@ class Room(
         _state.update {
             it.copy(connectedPlayers = it.connectedPlayers - player)
         }
+        
     }
 
     suspend fun broadcast(state: RoomState) {
-        val json = Json.encodeToString(RoomState.serializer(), state)
-        println("Broadcasting JSON: $json") // Print JSON to terminal for debugging
-        val frame = Frame.Text(json)
+      //  val json = Json.encodeToString(RoomState.serializer(), state)
+      //  println("Broadcasting JSON: $json") // Print JSON to terminal for debugging
+        
+        playerSockets.keys.forEach{ key ->
+            if(state.playersCurrentlyPlaying.contains(key)){
+                ongoingGames.values.forEach{
+                   ongoingGame ->
+                   if(ongoingGame.value.connectedPlayers.contains(key)){
+                    playerSockets[key]!!.send(
+                        Json.encodeToString(ongoingGame)
+                    )
+                    
+                   }
+                }
+            }
+            
+            else{
+                playerSockets[key]!!.send(
+                    Json.encodeToString(RoomState.serializer(),state)
+                )
+            }
 
-        playerSockets.values.forEach { socket ->
-            socket.send(
-                Json.encodeToString(RoomState.serializer(),state)
-            )
         }
+        
     }
     
     suspend fun sendGameRequest(uidSender : String,uidReciever:String){
@@ -81,20 +100,34 @@ class Room(
 
                 it.copy(
                     requests = it.requests - ("$uidReciever")
+                    
                 )
 
                 it.copy(
-                    playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidSender
-                )
-                it.copy(
-
-                    playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever
-                )
+                    playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever +uidSender
+                    
+                  ) 
+                
 
             }
 
-            
+            val gameState = MutableStateFlow(RoomState())
+
+            gameState.update { 
+              it.copy(
+                isGamePlaying = true,
+                
+              ) 
+              it.copy(
+                connectedPlayers = it.connectedPlayers + uidSender + uidReciever
+              )
+
+            }
+
+            ongoingGames.put(uidReciever,gameState)
     }
+
+    
 
     
 

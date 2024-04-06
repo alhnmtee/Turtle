@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.turtle.databinding.NormalGameRoomsBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.plcoding.onlinetictactoe.ui.theme.RoomsTheme
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.withCreationCallback
@@ -58,7 +59,6 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 RoomsTheme {
-
                     val viewModel by viewModels<RoomViewModel>(
                         extrasProducer = {
                             defaultViewModelCreationExtras.withCreationCallback<
@@ -69,6 +69,14 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                     )
 
                     val state by viewModel.state.collectAsState()
+
+                    if(state.requests.containsValue(FirebaseAuth.getInstance().uid)){
+
+                        //kabul
+                    }
+                    if(state.isGamePlaying){
+                      //oyun
+                    }
 
                     val isConnecting by viewModel.isConnecting.collectAsState()
                     val showConnectionError by viewModel.showConnectionError.collectAsState()
@@ -98,6 +106,9 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         if(state.connectedPlayers.isNotEmpty()){
                             RoomField(state = state){playerName ->
                                 // Handle player clicks here
+                                if(!state.requests.containsKey(FirebaseAuth.getInstance().uid))
+                                    viewModel.sendMsg("send_game_request#$playerName")
+
                                 Log.d(TAG, "Player clicked: $playerName")
                             }
                         }
@@ -148,7 +159,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        viewModel.onCleared()
+        //viewModel.onCleared()
     }
 }
 
