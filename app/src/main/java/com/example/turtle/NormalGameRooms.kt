@@ -32,6 +32,16 @@ import roomField.RoomField
 class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     private var _binding: NormalGameRoomsBinding? = null
     private val binding get() = _binding!!
+    var mode : String = ""
+    var lc : Int = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mode = loadGameMode().toString()
+        lc = loadWordSize()
+    }
+
+    private val viewModel: RoomViewModel by viewModels()
 
     //compose arayüzünün yazıldığı fonksiyon
     override fun onCreateView(
@@ -49,9 +59,6 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
             setContent {
                 RoomsTheme {
 
-                    val mode : String = loadGameMode().toString()
-                    val lc : Int = loadWordSize()
-
                     val viewModel by viewModels<RoomViewModel>(
                         extrasProducer = {
                             defaultViewModelCreationExtras.withCreationCallback<
@@ -67,8 +74,8 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                     val showConnectionError by viewModel.showConnectionError.collectAsState()
 
                     Log.e(TAG, "onCreateView: ${state.connectedPlayers}", )
-                    val cu = state
-                    Log.e(TAG, "onCreateView: ${cu}", )
+
+                    Log.e(TAG, "onCreateView: ${state}", )
                     //hata var mı diye
                     if(showConnectionError) {
                         Box(
@@ -141,6 +148,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        viewModel.onCleared()
     }
 }
 

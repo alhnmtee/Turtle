@@ -45,7 +45,7 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
                 }
             }
             catch( e : Exception){
-                println("Caught exception: $e")
+                e.printStackTrace()
             }
             finally{
                 room.disconnectPlayer(player)
