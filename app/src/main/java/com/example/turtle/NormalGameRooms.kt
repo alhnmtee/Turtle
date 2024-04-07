@@ -16,8 +16,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -72,15 +70,9 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             }
                         }
                     )
-                    val showDialog = remember { mutableStateOf(false) }
                     val state by viewModel.state.collectAsState()
 
-                    if(state.requests.containsValue(FirebaseAuth.getInstance().uid)){
-                        showDialog.value = true
 
-
-                        //kabul
-                    }
                     if(state.isGamePlaying){
                         Log.e(TAG, "Erik dalı:"+ state, )
                         //oyun başlatıldı
@@ -97,10 +89,35 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         return@RoomsTheme
 
                     }
-                    if (showDialog.value) {
+                    if (state.rejectedPlayers.contains(FirebaseAuth.getInstance().uid)) {
                         AlertDialog(
                             onDismissRequest = {
-                                showDialog.value = false
+
+                            },
+                            title = {
+                                Text(text = "Reddedildiniz")
+                            },
+                            text = {
+                                Text("Gönderdiğiniz istek reddedildi")
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
+                                        viewModel.sendMsg("got_denied#")
+                                    }
+                                ) {
+                                    Text("Tamam")
+                                }
+                            },
+
+                        )
+                    }
+
+                    if (state.requests.containsValue(FirebaseAuth.getInstance().uid)) {
+                        AlertDialog(
+                            onDismissRequest = {
+
                             },
                             title = {
                                 Text(text = "Game Request")
@@ -111,25 +128,31 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             confirmButton = {
                                 Button(
                                     onClick = {
-                                        showDialog.value = false
                                         val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
-                                        val receiverId = state.requests.keys.first() // Get the ID of the user who received the request
-                                        if (senderId != null) {
+                                        val receiverId = state.requests.entries.find{ it.value == senderId}?.key
+                                        if (senderId != null && receiverId != null) {
                                             viewModel.startGame(senderId, receiverId)
                                         }
+                                        Log.e(TAG, "isteği kabul et: ${state}", )
                                     }
                                 ) {
-                                    Text("Accept")
+                                    Text("Kabul Et")
                                 }
                             },
                             dismissButton = {
                                 Button(
                                     onClick = {
-                                        showDialog.value = false
+                                        val senderId = FirebaseAuth.getInstance().uid
+                                        val receiverId = state.requests.entries.find{ it.value == senderId}?.key
+                                        if (senderId != null && receiverId != null) {
+                                            viewModel.denyGame(senderId,receiverId)
+
+                                        }
+                                        Log.e(TAG, "isteği red et: ${state}", )
 
                                     }
                                 ) {
-                                    Text("Reject")
+                                    Text("Reddet")
                                 }
                             }
                         )

@@ -7,6 +7,7 @@ data class RoomState(
     val connectedPlayers: List<String> = emptyList(),
     val playersCurrentlyPlaying :List<String> = emptyList(),
     val requests : Map<String , String> = emptyMap(),
+    val rejectedPlayers : List<String> = emptyList(),
 
 
     val isGamePlaying :Boolean = false,

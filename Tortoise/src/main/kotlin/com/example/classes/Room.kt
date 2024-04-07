@@ -64,28 +64,42 @@ class Room(
     }
 
     suspend fun broadcast(state: RoomState) {
-        val jsonState = Json.encodeToString(RoomState.serializer(), state)
-        playerSockets.values.forEach { socket ->
-            socket.send(Frame.Text(jsonState))
-        }
         playerSockets.keys.forEach { key ->
             if (state.playersCurrentlyPlaying.contains(key)) {
                 ongoingGames.values.forEach { ongoingGame ->
                     if (ongoingGame.value.connectedPlayers.contains(key)) {
-                        val gameData = ongoingGame.value // Extract relevant game data
+                        println("Oyun oynaya giden oda State: $ongoingGame")
                         playerSockets[key]!!.send(
-                            Json.encodeToString(RoomState.serializer(), gameData)
+                            Json.encodeToString(RoomState.serializer(),ongoingGame.value)
                         )
                     }
+                    
                 }
             } else {
+                println("Normal oda State: $state")
                 playerSockets[key]!!.send(
-                    jsonState
+                    Json.encodeToString(RoomState.serializer(), state)
                 )
             }
         }
     }
 
+    suspend fun denyGameRequest(uidSender: String, uidReciever: String){
+        _state.update {
+            it.copy(
+                requests = it.requests - ("$uidReciever"),
+                rejectedPlayers = it.rejectedPlayers + uidReciever
+            )
+        }
+    }
+
+    suspend fun confirmDenial(uidSender :String){
+        _state.update{
+            it.copy(
+                rejectedPlayers = it.rejectedPlayers - uidSender
+            )
+        }
+    }
 
     suspend fun sendGameRequest(uidSender: String, uidReciever: String) {
         //al json = Json.encodeToString(state)
@@ -100,7 +114,12 @@ class Room(
         _state.update {
             it.copy(
                 requests = it.requests - ("$uidReciever"),
-                playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever + uidSender
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidSender,
+            )
+        }
+        _state.update {
+            it.copy(
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever 
             )
         }
         startGame(uidSender, uidReciever)

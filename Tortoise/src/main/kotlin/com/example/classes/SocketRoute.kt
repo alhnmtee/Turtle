@@ -37,7 +37,13 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
                         if(type == "send_game_request"){
                             room.sendGameRequest(player, body)
                         }
-                        if(type== "recieve_game_request"){
+                        if(type == "deny_game_request"){
+                            room.denyGameRequest(player, body)
+                        }
+                        if(type == "got_denied"){
+                            room.confirmDenial(player)
+                        }
+                        if(type== "confirm_game_request"){
                             room.confirmGameRequest(player, body)
                         }
 
