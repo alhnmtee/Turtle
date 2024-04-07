@@ -67,6 +67,12 @@ class RoomViewModel @AssistedInject constructor(
         }
     }
 
+    fun startGame(senderId: String, receiverId: String) {
+        viewModelScope.launch {
+            client.sendServerMessage("start_game#$senderId#$receiverId")
+        }
+    }
+
     public fun sendMsg(msg:String){
         viewModelScope.launch{
             client.sendServerMessage(msg)

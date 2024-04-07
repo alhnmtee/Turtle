@@ -34,7 +34,7 @@ class KtorRealtimeMessagingClient(
             if(currentCoroutineContext().isActive){
                 try{
                     session = client.webSocketSession {
-                        url("ws://192.168.1.45:8080/room/$mode/$letterCount/${FirebaseAuth.getInstance().currentUser?.uid}")
+                        url("ws://192.168.1.63:8080/room/$mode/$letterCount/${FirebaseAuth.getInstance().currentUser?.uid}")
                     }
                     val roomStates = session!!
                         .incoming
@@ -56,17 +56,12 @@ class KtorRealtimeMessagingClient(
 
         }
     }
-
     override suspend fun sendServerMessage(msg:String){
         session?.outgoing?.send(
             Frame.Text(msg)
         )
 
     }
-
-
-
-
 
     override suspend fun close() {
         session?.close()

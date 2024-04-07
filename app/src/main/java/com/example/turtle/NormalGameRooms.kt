@@ -9,11 +9,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -53,6 +57,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
         val view = inflater.inflate(R.layout.normal_game_rooms, container, false)
         val composeView = view.findViewById<ComposeView>(R.id.compose_view)
 
+
         composeView.apply {
             // Dispose of the Composition when the view's LifecycleOwner
             // is destroyed
@@ -67,15 +72,67 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             }
                         }
                     )
-
+                    val showDialog = remember { mutableStateOf(false) }
                     val state by viewModel.state.collectAsState()
 
                     if(state.requests.containsValue(FirebaseAuth.getInstance().uid)){
+                        showDialog.value = true
+
 
                         //kabul
                     }
                     if(state.isGamePlaying){
-                      //oyun
+                        Log.e(TAG, "Erik dalı:"+ state, )
+                        //oyun başlatıldı
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Oyun başlatıldı",
+                                style = MaterialTheme.typography.h5
+                            )
+
+                        }
+                        return@RoomsTheme
+
+                    }
+                    if (showDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showDialog.value = false
+                            },
+                            title = {
+                                Text(text = "Game Request")
+                            },
+                            text = {
+                                Text("You have a game request. Do you want to accept?")
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showDialog.value = false
+                                        val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
+                                        val receiverId = state.requests.keys.first() // Get the ID of the user who received the request
+                                        if (senderId != null) {
+                                            viewModel.startGame(senderId, receiverId)
+                                        }
+                                    }
+                                ) {
+                                    Text("Accept")
+                                }
+                            },
+                            dismissButton = {
+                                Button(
+                                    onClick = {
+                                        showDialog.value = false
+
+                                    }
+                                ) {
+                                    Text("Reject")
+                                }
+                            }
+                        )
                     }
 
                     val isConnecting by viewModel.isConnecting.collectAsState()

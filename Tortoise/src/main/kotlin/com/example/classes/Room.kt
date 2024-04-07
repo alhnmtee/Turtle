@@ -21,16 +21,21 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.encodeToString
 
+@Serializable
+data class GameState(
+    val isGamePlaying: Boolean = false,
+    val connectedPlayers: Set<String> = emptySet()
+)
 class Room(
-){
+) {
     private val _state = MutableStateFlow(RoomState())
-    val state : StateFlow<RoomState> = _state
+    val state: StateFlow<RoomState> = _state
 
-    private val playerSockets = ConcurrentHashMap<String , WebSocketSession>()
+    private val playerSockets = ConcurrentHashMap<String, WebSocketSession>()
 
-    private val roomScope  = CoroutineScope(SupervisorJob()+Dispatchers.IO )
-    
-    private val ongoingGames = ConcurrentHashMap<String,MutableStateFlow<RoomState>>()
+    private val roomScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val ongoingGames = ConcurrentHashMap<String, MutableStateFlow<RoomState>>()
 
     init {
         state.onEach(::broadcast).launchIn(roomScope)
@@ -55,80 +60,65 @@ class Room(
         _state.update {
             it.copy(connectedPlayers = it.connectedPlayers - player)
         }
-        
+
     }
 
     suspend fun broadcast(state: RoomState) {
-      //  val json = Json.encodeToString(RoomState.serializer(), state)
-      //  println("Broadcasting JSON: $json") // Print JSON to terminal for debugging
-        
-        playerSockets.keys.forEach{ key ->
-            if(state.playersCurrentlyPlaying.contains(key)){
-                ongoingGames.values.forEach{
-                   ongoingGame ->
-                   if(ongoingGame.value.connectedPlayers.contains(key)){
-                    playerSockets[key]!!.send(
-                        Json.encodeToString(ongoingGame)
-                    )
-                    
-                   }
+        val jsonState = Json.encodeToString(RoomState.serializer(), state)
+        playerSockets.values.forEach { socket ->
+            socket.send(Frame.Text(jsonState))
+        }
+        playerSockets.keys.forEach { key ->
+            if (state.playersCurrentlyPlaying.contains(key)) {
+                ongoingGames.values.forEach { ongoingGame ->
+                    if (ongoingGame.value.connectedPlayers.contains(key)) {
+                        val gameData = ongoingGame.value // Extract relevant game data
+                        playerSockets[key]!!.send(
+                            Json.encodeToString(RoomState.serializer(), gameData)
+                        )
+                    }
                 }
-            }
-            
-            else{
+            } else {
                 playerSockets[key]!!.send(
-                    Json.encodeToString(RoomState.serializer(),state)
+                    jsonState
                 )
             }
-
         }
-        
     }
-    
-    suspend fun sendGameRequest(uidSender : String,uidReciever:String){
+
+
+    suspend fun sendGameRequest(uidSender: String, uidReciever: String) {
         //al json = Json.encodeToString(state)
-        _state.update{
+        _state.update {
             it.copy(
                 requests = it.requests + ("$uidSender" to "$uidReciever")
             )
         }
     }
 
-    suspend fun confirmGameRequest(uidSender : String,uidReciever:String){
-            
-            _state.update{
-
-                it.copy(
-                    requests = it.requests - ("$uidReciever")
-                    
-                )
-
-                it.copy(
-                    playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever +uidSender
-                    
-                  ) 
-                
-
-            }
-
-            val gameState = MutableStateFlow(RoomState())
-
-            gameState.update { 
-              it.copy(
-                isGamePlaying = true,
-                
-              ) 
-              it.copy(
-                connectedPlayers = it.connectedPlayers + uidSender + uidReciever
-              )
-
-            }
-
-            ongoingGames.put(uidReciever,gameState)
+    suspend fun confirmGameRequest(uidSender: String, uidReciever: String) {
+        _state.update {
+            it.copy(
+                requests = it.requests - ("$uidReciever"),
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever + uidSender
+            )
+        }
+        startGame(uidSender, uidReciever)
     }
 
-    
+    fun startGame(uidSender: String, uidReciever: String) {
+        if (ongoingGames.containsKey(uidReciever)) {
+            return
+        }
 
-    
+        val roomState = MutableStateFlow(RoomState())
+        roomState.update {
+            it.copy(
+                isGamePlaying = true,
+                connectedPlayers = it.connectedPlayers + uidSender + uidReciever
+            )
+        }
 
+        ongoingGames.put(uidReciever, roomState)
+    }
 }   

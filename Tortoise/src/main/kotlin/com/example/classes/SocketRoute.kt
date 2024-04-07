@@ -39,10 +39,12 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
                         }
                         if(type== "recieve_game_request"){
                             room.confirmGameRequest(player, body)
-                        } 
+                        }
+
                         //odalar için routing işlemi falan fişman yapılacak
                     }
                 }
+
             }
             catch( e : Exception){
                 e.printStackTrace()
@@ -50,6 +52,7 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
             finally{
                 room.disconnectPlayer(player)
             }
+
 
         }
     }
