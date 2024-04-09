@@ -2,6 +2,8 @@ package data
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.classes.RoomState
@@ -75,7 +77,9 @@ class RoomViewModel @AssistedInject constructor(
     }
 
     fun sendGameRequest(receiverId: String){
-        sendMsg("send_game_request$receiverId")
+        viewModelScope.launch {
+            client.sendServerMessage("send_game_request#$receiverId")
+        }
     }
 
     fun gotDenied() {
@@ -93,6 +97,7 @@ class RoomViewModel @AssistedInject constructor(
     }
 
     fun setWordForOtherPlayer(word:String,wordsList : List<String>): Boolean {
+        Log.d("setWordForOtherPlayer", "Attempting to send word: $word")
         return if(wordsList.contains(word)){
             sendMsg("set_player_word#$word")
             true

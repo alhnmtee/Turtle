@@ -22,8 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 
 @Composable
 fun WordField(
@@ -38,7 +40,9 @@ fun WordField(
             text = firstText
         }
         else{
-            text = firstText.substring(letterCount-1)
+            if (text.length >= letterCount) {
+                text = firstText.substring(0, Math.min(letterCount, firstText.length))
+            }
         }
     }
 
@@ -79,4 +83,10 @@ fun WordField(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewWordField() {
+    WordField(scoreOfTheWord = List(10){0},letterCount = 10,firstText = "deneme")
 }

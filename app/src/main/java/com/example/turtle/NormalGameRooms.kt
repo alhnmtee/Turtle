@@ -14,8 +14,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -43,7 +47,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     var mode : String = ""
     var lc : Int = 0
 
-    private val wordsList = /*readWordsFromFile(this.context)*/ listOf("burak","kurak")
+    private val wordsList = /*readWordsFromFile(this.context)*/ listOf("BURAK","KURAK")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,7 +82,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         }
                     )
                     val state by viewModel.state.collectAsState()
-
+                    var showGameScreen by remember { mutableStateOf(false) }
 
                     if(state.isGamePlaying){
                         val playerGame : Map<String,List<Int>> =
@@ -95,24 +99,43 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 else -> {state.player1Word}
                             }
 
+                        LaunchedEffect(state.player1Word, state.player2Word) {
+                            if (state.player1Word.isNotEmpty() && state.player2Word.isNotEmpty()) {
+                                showGameScreen = true
+                            }
+                        }
 
                         if(mode == "normal" &&
-                            if(FirebaseAuth.getInstance().uid == state.player1Id) state.player2Word!=""
-                            else if(FirebaseAuth.getInstance().uid == state.player2Id ) state.player1Word!="" else false
-
+                            when (FirebaseAuth.getInstance().uid) {
+                                state.player1Id -> state.player2Word!=" "
+                                state.player2Id -> state.player1Word!=" "
+                                else -> false
+                            }
                         ){
                             WordSelectionField(letterCount = lc) {
                                 submittedText ->
                                 val response = viewModel.setWordForOtherPlayer(submittedText,wordsList)
+                                Log.d("WordSelectionField", "Submitted word: $submittedText")
+                                Log.d("WordSelectionField", "Server response: $response")
+
+                                Log.d("WordSelectionField", "State: $state")
                                 return@WordSelectionField
                             }
-                        }
-                        
-                        GameField(letterCount = lc, indexOfWord = playerGame.size, gameOfPlayer = playerGame) {
-                            submittedText ->
-                            val response = viewModel.sendWord(submittedText,wordsList)
 
                         }
+                        if (showGameScreen) {
+                                GameField(letterCount = lc, indexOfWord = playerGame.size, gameOfPlayer = playerGame) {
+                                        submittedText ->
+                                    val response = viewModel.sendWord(submittedText,wordsList)
+                                    return@GameField
+                                }
+
+                        }
+
+                        LaunchedEffect(state.player1Word, state.player2Word) {
+                            Log.d("RoomViewModel", "player1Word: ${state.player1Word}, player2Word: ${state.player2Word}")
+                        }
+
                         //state ' e göre kulllanıcı , kullanıcı 1 mi yoksa 2 mi ona bakılıcak .
                         //kmasndasdnksakd(){
                         // caturıoı ->

@@ -86,6 +86,7 @@ class Room(
             }
         }
     }
+    //#TODO BU skorlama için girilen kelimeyi alıp skorlayan fonksiyon di mi?????
     suspend fun getWordFromPlayer(uidSender: String, word: String){
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
@@ -162,30 +163,36 @@ class Room(
     }
 
     suspend fun setOtherPlayerWord(uidSender: String, word: String){
+        println("setOtherPlayerWord : Attempting to set word: $word for user: $uidSender")
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
                 if(uidSender == ongoingGame.value.player1Id){
                     ongoingGame.update {
                         it.copy(
                             player2Word = word
+
                         )
                     }
+                    println("player2Word set to $word")
                 }
                 else if (uidSender == ongoingGame.value.player2Id){
                     ongoingGame.update {
                         it.copy(
                             player1Word = word
+
                         )
+
                     }
+                    println("player1Word set to $word")
                 }
-                
+                broadcast(ongoingGame.value)
             }
             else{
-                
+                println("Player not found in ongoing games")
             }
-            
+
         }
-        
+
     }
 
 
@@ -256,4 +263,4 @@ class Room(
 
         ongoingGames.put(uidReciever, newRoomState)
     }
-}   
+}
