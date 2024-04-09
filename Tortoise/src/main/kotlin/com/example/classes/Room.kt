@@ -6,9 +6,9 @@ import kotlinx.serialization.*
 import kotlinx.serialization.serializer
 import kotlinx.serialization.serializer
 import kotlinx.serialization.serializer
-import com.example.classes.GameState
 import com.example.classes.RoomState
 import java.util.concurrent.ConcurrentHashMap
+import java.io.File
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.encodeToString
+import kotlin.random.Random
 
 @Serializable
 data class GameState(
@@ -36,6 +37,8 @@ class Room(
     private val roomScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val ongoingGames = ConcurrentHashMap<String, MutableStateFlow<RoomState>>()
+
+    
 
     init {
         state.onEach(::broadcast).launchIn(roomScope)
@@ -83,6 +86,108 @@ class Room(
             }
         }
     }
+    suspend fun getWordFromPlayer(uidSender: String, word: String){
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                if(uidSender == ongoingGame.value.player1Id){
+                    ongoingGame.update {
+                        it.copy(
+                           player1Game = it.player1Game + (word to getWordScore(word,it.player1Word)),
+                        )
+                    }
+
+                    if(word == ongoingGame.value.player1Word && ongoingGame.value.playerWon==""){
+                        ongoingGame.update {
+                            it.copy(
+                               playerWon = uidSender,
+                            )
+                        }
+                    }
+
+                }
+
+
+                else if (uidSender == ongoingGame.value.player2Id){
+                    ongoingGame.update {
+                        it.copy(
+                           player2Game = it.player2Game + (word to getWordScore(word,it.player2Word)),
+                        )
+                    }
+
+                    if(word == ongoingGame.value.player2Word && ongoingGame.value.playerWon==""){
+                        ongoingGame.update {
+                            it.copy(
+                               playerWon = uidSender,
+                            )
+                        }
+                    }
+                }
+                
+            }
+            else{
+                
+            }
+            
+        }
+    }
+
+    suspend fun disconnectFromGame(uidSender : String){
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                ongoingGame.update { 
+                  it.copy(
+                    connectedPlayers = it.connectedPlayers - uidSender
+                  )  
+                }
+                
+            }
+            else{
+                
+            }
+            
+        }
+    }
+
+    private suspend fun getWordScore(word:String , answerWord : String) : List<Int> {
+        val array = Array(answerWord.length){0}
+        for(i in 0..answerWord.length){
+            if(word.get(i) == answerWord.get(i)){
+                array[i]=10
+            }
+            else if(answerWord.contains(word.get(i))){
+                array[i]=5
+            }
+        }
+        return array.toList()
+    }
+
+    suspend fun setOtherPlayerWord(uidSender: String, word: String){
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                if(uidSender == ongoingGame.value.player1Id){
+                    ongoingGame.update {
+                        it.copy(
+                            player2Word = word
+                        )
+                    }
+                }
+                else if (uidSender == ongoingGame.value.player2Id){
+                    ongoingGame.update {
+                        it.copy(
+                            player1Word = word
+                        )
+                    }
+                }
+                
+            }
+            else{
+                
+            }
+            
+        }
+        
+    }
+
 
     suspend fun denyGameRequest(uidSender: String, uidReciever: String){
         _state.update {
@@ -110,7 +215,7 @@ class Room(
         }
     }
 
-    suspend fun confirmGameRequest(uidSender: String, uidReciever: String) {
+    suspend fun confirmGameRequest(uidSender: String, uidReciever: String , mode :String , letterCount :Int) {
         _state.update {
             it.copy(
                 requests = it.requests - ("$uidReciever"),
@@ -122,22 +227,33 @@ class Room(
                 playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever 
             )
         }
-        startGame(uidSender, uidReciever)
+        startGame(uidSender, uidReciever , mode , letterCount)
     }
 
-    fun startGame(uidSender: String, uidReciever: String) {
+    private fun startGame(uidSender: String, uidReciever: String,mode:String,letterCount : Int) {
         if (ongoingGames.containsKey(uidReciever)) {
             return
         }
 
-        val roomState = MutableStateFlow(RoomState())
-        roomState.update {
+        val newRoomState = MutableStateFlow(RoomState())
+        var word :String= ""
+        if(mode == "random"){
+            //val wordsList = File("..../resources/kelimeler.txt").useLines{ lines -> lines.filter {it.length == letterCount}.toList() }
+            //val randomIndex = Random.nextInt(0, wordsList.size)
+            //word = wordsList.get(randomIndex)
+            word = ""
+        }
+        newRoomState.update {
             it.copy(
                 isGamePlaying = true,
-                connectedPlayers = it.connectedPlayers + uidSender + uidReciever
+                connectedPlayers = it.connectedPlayers + uidSender + uidReciever,
+                player1Id = uidReciever,
+                player2Id = uidSender,
+                player1Word=word,
+                player2Word=word,
             )
         }
 
-        ongoingGames.put(uidReciever, roomState)
+        ongoingGames.put(uidReciever, newRoomState)
     }
 }   

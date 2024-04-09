@@ -68,17 +68,40 @@ class RoomViewModel @AssistedInject constructor(
     }
 
     fun startGame(senderId: String, receiverId: String) {
-        viewModelScope.launch {
-                client.sendServerMessage("confirm_game_request#$receiverId")
-        }
+        sendMsg("confirm_game_request#$receiverId*$mode-$letterCount")
     }
     fun denyGame(senderId: String, receiverId: String) {
-        viewModelScope.launch {
-            client.sendServerMessage("deny_game_request#$receiverId")
+        sendMsg("deny_game_request#$receiverId")
+    }
+
+    fun sendGameRequest(receiverId: String){
+        sendMsg("send_game_request$receiverId")
+    }
+
+    fun gotDenied() {
+        sendMsg("got_denied#")
+    }
+
+    fun sendWord(word:String ,wordsList : List<String>): Boolean {
+        return if(wordsList.contains(word)){
+            sendMsg("get_word_from_player#$word")
+            true
+        } else{
+            false
+        }
+
+    }
+
+    fun setWordForOtherPlayer(word:String,wordsList : List<String>): Boolean {
+        return if(wordsList.contains(word)){
+            sendMsg("set_player_word#$word")
+            true
+        } else{
+            false
         }
     }
 
-    public fun sendMsg(msg:String){
+    private fun sendMsg(msg:String){
         viewModelScope.launch{
             client.sendServerMessage(msg)
         }

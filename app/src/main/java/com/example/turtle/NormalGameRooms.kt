@@ -29,7 +29,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.withCreationCallback
 import data.RoomViewModel
 import data.RoomViewModelFactory
-import roomField.RoomField
+import fields.GameField
+import fields.RoomField
+import fields.WordSelectionField
+import java.io.BufferedReader
+import java.io.InputStreamReader
+
 
 @AndroidEntryPoint
 class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
@@ -37,6 +42,8 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     private val binding get() = _binding!!
     var mode : String = ""
     var lc : Int = 0
+
+    private val wordsList = /*readWordsFromFile(this.context)*/ listOf("burak","kurak")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,18 +81,48 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 
 
                     if(state.isGamePlaying){
-                        Log.e(TAG, "Erik dalı:"+ state, )
-                        //oyun başlatıldı
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Oyun başlatıldı",
-                                style = MaterialTheme.typography.h5
-                            )
+                        val playerGame : Map<String,List<Int>> =
+                            when(FirebaseAuth.getInstance().uid){
+                                state.player1Id -> state.player1Game
+                                state.player2Id -> state.player2Game
+                                else -> {state.player1Game}
+                            }
+
+                        val playerWord : String =
+                            when(FirebaseAuth.getInstance().uid){
+                                state.player1Id -> state.player1Word
+                                state.player2Id -> state.player2Word
+                                else -> {state.player1Word}
+                            }
+
+
+                        if(mode == "normal" &&
+                            if(FirebaseAuth.getInstance().uid == state.player1Id) state.player2Word!=""
+                            else if(FirebaseAuth.getInstance().uid == state.player2Id ) state.player1Word!="" else false
+
+                        ){
+                            WordSelectionField(letterCount = lc) {
+                                submittedText ->
+                                val response = viewModel.setWordForOtherPlayer(submittedText,wordsList)
+                                return@WordSelectionField
+                            }
+                        }
+                        
+                        GameField(letterCount = lc, indexOfWord = playerGame.size, gameOfPlayer = playerGame) {
+                            submittedText ->
+                            val response = viewModel.sendWord(submittedText,wordsList)
 
                         }
+                        //state ' e göre kulllanıcı , kullanıcı 1 mi yoksa 2 mi ona bakılıcak .
+                        //kmasndasdnksakd(){
+                        // caturıoı ->
+                        //setWordForOtherPlayer(caturıoı)
+                        //}
+                        //kelime girişi kelime belirleme için ayrı fonksiyon olarak yapılırsa daha iyi
+                        //açılcak composable fonksiyon şeysine doğru veriler gönderilecek
+                        //composable şeysinden gelen veriler server' a iletilecek
+
+
                         return@RoomsTheme
 
                     }
@@ -104,7 +141,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 Button(
                                     onClick = {
                                         val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
-                                        viewModel.sendMsg("got_denied#")
+                                        viewModel.gotDenied()
                                     }
                                 ) {
                                     Text("Tamam")
@@ -187,8 +224,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             RoomField(state = state){playerName ->
                                 // Handle player clicks here
                                 if(!state.requests.containsKey(FirebaseAuth.getInstance().uid))
-                                    viewModel.sendMsg("send_game_request#$playerName")
-
+                                    viewModel.sendGameRequest(playerName)
                                 Log.d(TAG, "Player clicked: $playerName")
                             }
                         }
@@ -243,3 +279,23 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     }
 }
 
+
+private fun readWordsFromFile(context: Context?): List<String> {
+    val wordsList = mutableListOf<String>()
+
+    try {
+        val inputStream = context!!.assets.open("assets/kelimeler.txt")
+
+        BufferedReader(InputStreamReader(inputStream)).use { reader ->
+            var line: String? = reader.readLine()
+            while (line != null) {
+                wordsList.add(line)
+                line = reader.readLine()
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+    return wordsList
+}

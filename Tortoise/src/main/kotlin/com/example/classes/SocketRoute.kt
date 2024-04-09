@@ -6,7 +6,6 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.json.Json
 import com.example.main
 import io.ktor.server.routing.*
-import WordleGame
 import kotlinx.coroutines.launch
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -40,11 +39,20 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
                         if(type == "deny_game_request"){
                             room.denyGameRequest(player, body)
                         }
+                        if(type=="set_player_word"){
+                            room.setOtherPlayerWord(player,body)
+                        }
+                        if(type == "get_word_from_player"){
+                            room.getWordFromPlayer(player,body)
+                        }
                         if(type == "got_denied"){
                             room.confirmDenial(player)
                         }
                         if(type== "confirm_game_request"){
-                            room.confirmGameRequest(player, body)
+                            room.confirmGameRequest(player, body.substringBefore("*"),body.substringAfter("*").substringBefore("-"),body.substringAfter("*").substringAfter("-").toInt())
+                        }
+                        if(type =="disconnect_from_game"){
+                            room.disconnectFromGame(player)
                         }
 
                         //odalar için routing işlemi falan fişman yapılacak
