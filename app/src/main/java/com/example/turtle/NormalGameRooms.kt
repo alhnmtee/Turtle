@@ -105,6 +105,19 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             }
                         }
 
+                        Log.e(TAG, "oyun : $playerGame ", )
+                        if (showGameScreen) {
+                            GameField(letterCount = lc, indexOfWord = playerGame.size, gameOfPlayer = playerGame) {
+                                    submittedText ->
+                                val response = viewModel.sendWord(submittedText,wordsList)
+                                Log.d("WordSelectionField", "Submitted word: $submittedText")
+                                Log.d("WordSelectionField", "Server response: $response")
+
+                                Log.d("WordSelectionField", "State: $state")
+                            }
+                            return@RoomsTheme
+                        }
+
                         if(mode == "normal" &&
                             when (FirebaseAuth.getInstance().uid) {
                                 state.player1Id -> state.player2Word!=" "
@@ -119,18 +132,11 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 Log.d("WordSelectionField", "Server response: $response")
 
                                 Log.d("WordSelectionField", "State: $state")
-                                return@WordSelectionField
+
                             }
-
+                            return@RoomsTheme
                         }
-                        if (showGameScreen) {
-                                GameField(letterCount = lc, indexOfWord = playerGame.size, gameOfPlayer = playerGame) {
-                                        submittedText ->
-                                    val response = viewModel.sendWord(submittedText,wordsList)
-                                    return@GameField
-                                }
 
-                        }
 
                         LaunchedEffect(state.player1Word, state.player2Word) {
                             Log.d("RoomViewModel", "player1Word: ${state.player1Word}, player2Word: ${state.player2Word}")

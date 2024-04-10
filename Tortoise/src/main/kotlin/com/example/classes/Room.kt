@@ -97,7 +97,7 @@ class Room(
                         )
                     }
 
-                    if(word == ongoingGame.value.player1Word && ongoingGame.value.playerWon==""){
+                    if(word == ongoingGame.value.player1Word && ongoingGame.value.playerWon==" "){
                         ongoingGame.update {
                             it.copy(
                                playerWon = uidSender,
@@ -115,7 +115,7 @@ class Room(
                         )
                     }
 
-                    if(word == ongoingGame.value.player2Word && ongoingGame.value.playerWon==""){
+                    if(word == ongoingGame.value.player2Word && ongoingGame.value.playerWon==" "){
                         ongoingGame.update {
                             it.copy(
                                playerWon = uidSender,
@@ -123,13 +123,14 @@ class Room(
                         }
                     }
                 }
-                
+                println("EN SON GÖNDERİLEN STATEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE $ongoingGame.value")
             }
             else{
                 
             }
             
         }
+        
     }
 
     suspend fun disconnectFromGame(uidSender : String){
@@ -151,7 +152,7 @@ class Room(
 
     private suspend fun getWordScore(word:String , answerWord : String) : List<Int> {
         val array = Array(answerWord.length){0}
-        for(i in 0..answerWord.length){
+        for(i in 0..<answerWord.length){
             if(word.get(i) == answerWord.get(i)){
                 array[i]=10
             }

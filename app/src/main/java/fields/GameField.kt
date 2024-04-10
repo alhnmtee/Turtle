@@ -14,9 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-
 
 
 @Composable
@@ -49,10 +47,10 @@ fun GameField(
                     WordField(gameOfPlayer.values.toList()[i],letterCount, firstText = gameOfPlayer.keys.toList()[i])
                 }
                 else if( i == indexOfWord){
-                    WordField(List(10){0},letterCount, firstText = text)
+                    WordField(List(letterCount){0},letterCount, firstText = text)
                 }
                 else{
-                    WordField(List(10){0},letterCount, firstText = "")
+                    WordField(List(letterCount){0},letterCount, firstText = "")
                 }
 
             }
