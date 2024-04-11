@@ -2,8 +2,6 @@ package data
 
 import android.content.ContentValues.TAG
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.classes.RoomState
@@ -70,6 +68,7 @@ class RoomViewModel @AssistedInject constructor(
     }
 
     fun startGame(senderId: String, receiverId: String) {
+        Log.e(TAG, "startGame: : sender =  $senderId : reciever = $receiverId : mode = $mode , letterCount = $letterCount", )
         sendMsg("confirm_game_request#$receiverId*$mode-$letterCount")
     }
     fun denyGame(senderId: String, receiverId: String) {

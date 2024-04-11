@@ -38,6 +38,7 @@ import data.RoomViewModelFactory
 import fields.GameField
 import fields.RoomField
 import fields.WordSelectionField
+import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -122,9 +123,11 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 }
                             GameField(letterCount = lc, indexOfWord = playerGame.value.size, gameOfPlayer = playerGame,playerScore = playerScore) {
                                     submittedText ->
-                                val response = viewModel.sendWord(submittedText,wordsList1)
+                                if(state.playerWon!=FirebaseAuth.getInstance().uid){
+                                    val response = viewModel.sendWord(submittedText,wordsList1)
+                                }
                                 Log.d("WordSelectionField", "Submitted word: $submittedText")
-                                Log.d("WordSelectionField", "Server response: $response")
+                                //Log.d("WordSelectionField", "Server response: $response")
 
                                 Log.d("WordSelectionField", "State: $state")
                             }
@@ -194,29 +197,53 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                     }
 
                     if (state.requests.containsValue(FirebaseAuth.getInstance().uid)) {
+
+                        var secondsLeft by remember { mutableStateOf(10) }
+                        var isTimerRunning by remember { mutableStateOf(true) }
+
+                        LaunchedEffect(Unit) {
+                            delay(1000)
+                            while (isTimerRunning && secondsLeft > 0) {
+                                delay(1000)
+                                secondsLeft--
+                            }
+                            if (isTimerRunning) {
+                                val senderId = FirebaseAuth.getInstance().uid
+                                val receiverId = state.requests.entries.find{ it.value == senderId}?.key
+                                if (senderId != null && receiverId != null) {
+                                    viewModel.denyGame(senderId,receiverId)
+
+                                }
+                            }
+                        }
+
                         AlertDialog(
                             onDismissRequest = {
 
                             },
                             title = {
-                                Text(text = "Game Request")
+                                Text(text = "Oyun isteği")
                             },
                             text = {
-                                Text("You have a game request. Do you want to accept?")
+                                Text("Size bir Oyun isteği gönedrildi , Kabul ya da Red edebilirsiniz.")
                             },
                             confirmButton = {
-                                Button(
-                                    onClick = {
-                                        val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
-                                        val receiverId = state.requests.entries.find{ it.value == senderId}?.key
-                                        if (senderId != null && receiverId != null) {
-                                            viewModel.startGame(senderId, receiverId)
+
+                                    Button(
+                                        onClick = {
+                                            val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
+                                            val receiverId = state.requests.entries.find{ it.value == senderId}?.key
+                                            if (senderId != null && receiverId != null) {
+                                                viewModel.startGame(senderId, receiverId)
+                                            }
+                                            Log.e(TAG, "isteği kabul et: ${state}", )
                                         }
-                                        Log.e(TAG, "isteği kabul et: ${state}", )
+                                    ) {
+                                        Text("Kabul Et ($secondsLeft saniye kaldı)")
                                     }
-                                ) {
-                                    Text("Kabul Et")
-                                }
+
+
+
                             },
                             dismissButton = {
                                 Button(

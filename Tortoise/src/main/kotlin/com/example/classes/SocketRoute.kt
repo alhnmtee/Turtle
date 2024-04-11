@@ -51,6 +51,9 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
                         if(type== "confirm_game_request"){
                             room.confirmGameRequest(player, body.substringBefore("*"),body.substringAfter("*").substringBefore("-"),body.substringAfter("*").substringAfter("-").toInt())
                         }
+                        if(type =="disconnect_from_server"){
+                            room.disconnectPlayer(player)
+                        }
                         if(type =="disconnect_from_game"){
                             room.disconnectFromGame(player)
                         }

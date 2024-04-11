@@ -58,13 +58,7 @@ class Room(
         return player
     }
 
-    fun disconnectPlayer(player: String) {
-        playerSockets.remove(player)
-        _state.update {
-            it.copy(connectedPlayers = it.connectedPlayers - player)
-        }
-
-    }
+   
 
     suspend fun broadcast(state: RoomState) {
         playerSockets.keys.forEach { key ->
@@ -86,6 +80,16 @@ class Room(
             }
         }
     }
+
+    fun disconnectPlayer(player: String) {
+        playerSockets.remove(player)
+        _state.update {
+            it.copy(connectedPlayers = it.connectedPlayers - player)
+        }
+
+    }
+
+
     //#TODO BU skorlama için girilen kelimeyi alıp skorlayan fonksiyon di mi?????
     suspend fun getWordFromPlayer(uidSender: String, word: String){
         ongoingGames.values.forEach { ongoingGame ->
@@ -100,7 +104,8 @@ class Room(
                         )
                     }
 
-                    if(word == ongoingGame.value.player1Word && ongoingGame.value.playerWon==" "){
+                    if(word == ongoingGame.value.player1Word && ongoingGame.value.playerWon==""){
+                      //  println("BİR OYUNCU OYUNU KAZANDI                     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBB")
                         ongoingGame.update {
                             it.copy(
                                 playerWon = uidSender,
@@ -117,7 +122,7 @@ class Room(
                         )
                     }
 
-                    if(word == ongoingGame.value.player2Word && ongoingGame.value.playerWon==" "){
+                    if(word == ongoingGame.value.player2Word && ongoingGame.value.playerWon== ""){
                         ongoingGame.update {
                             it.copy(
                                 playerWon = uidSender,
@@ -223,6 +228,7 @@ class Room(
     }
 
     suspend fun confirmGameRequest(uidSender: String, uidReciever: String , mode :String , letterCount :Int) {
+        
         _state.update {
             it.copy(
                 requests = it.requests - ("$uidReciever"),
@@ -234,6 +240,7 @@ class Room(
                 playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever 
             )
         }
+        println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA : $state")
         startGame(uidSender, uidReciever , mode , letterCount)
     }
 
