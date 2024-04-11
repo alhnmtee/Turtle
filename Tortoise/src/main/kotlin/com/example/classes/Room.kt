@@ -76,7 +76,7 @@ class Room(
                             Json.encodeToString(RoomState.serializer(),ongoingGame.value)
                         )
                     }
-                    
+
                 }
             } else {
                 println("Normal oda State: $state")
@@ -90,47 +90,44 @@ class Room(
     suspend fun getWordFromPlayer(uidSender: String, word: String){
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                val wordScore = getWordScore(word, if(uidSender == ongoingGame.value.player1Id) ongoingGame.value.player1Word else ongoingGame.value.player2Word)
+                val totalScore = wordScore.sum()
                 if(uidSender == ongoingGame.value.player1Id){
                     ongoingGame.update {
                         it.copy(
-                           player1Game = it.player1Game + (word to getWordScore(word,it.player1Word)),
+                            player1Game = it.player1Game + (word to wordScore),
+                            player1Score = it.player1Score + totalScore
                         )
                     }
 
                     if(word == ongoingGame.value.player1Word && ongoingGame.value.playerWon==" "){
                         ongoingGame.update {
                             it.copy(
-                               playerWon = uidSender,
+                                playerWon = uidSender,
                             )
                         }
                     }
 
                 }
-
-
                 else if (uidSender == ongoingGame.value.player2Id){
                     ongoingGame.update {
                         it.copy(
-                           player2Game = it.player2Game + (word to getWordScore(word,it.player2Word)),
+                            player2Game = it.player2Game + (word to wordScore),
+                            player2Score = it.player2Score + totalScore
                         )
                     }
 
                     if(word == ongoingGame.value.player2Word && ongoingGame.value.playerWon==" "){
                         ongoingGame.update {
                             it.copy(
-                               playerWon = uidSender,
+                                playerWon = uidSender,
                             )
                         }
                     }
                 }
-                println("EN SON GÖNDERİLEN STATEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE $ongoingGame.value")
+                broadcast(ongoingGame.value)
             }
-            else{
-                
-            }
-            
         }
-        
     }
 
     suspend fun disconnectFromGame(uidSender : String){
@@ -162,6 +159,8 @@ class Room(
         }
         return array.toList()
     }
+
+
 
     suspend fun setOtherPlayerWord(uidSender: String, word: String){
         println("setOtherPlayerWord : Attempting to set word: $word for user: $uidSender")
@@ -246,7 +245,7 @@ class Room(
         val newRoomState = MutableStateFlow(RoomState())
         var word :String= ""
         if(mode == "random"){
-            //val wordsList = File("..../resources/kelimeler.txt").useLines{ lines -> lines.filter {it.length == letterCount}.toList() }
+            //val wordsList = File("..../resources/kelimelerB.txt").useLines{ lines -> lines.filter {it.length == letterCount}.toList() }
             //val randomIndex = Random.nextInt(0, wordsList.size)
             //word = wordsList.get(randomIndex)
             word = ""

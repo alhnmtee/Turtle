@@ -1,5 +1,6 @@
 package com.example.turtle
 
+import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
@@ -15,6 +16,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +49,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     var mode : String = ""
     var lc : Int = 0
 
-    private val wordsList = /*readWordsFromFile(this.context)*/ listOf("BURAK","KURAK")
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +60,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     private val viewModel: RoomViewModel by viewModels()
 
     //compose arayüzünün yazıldığı fonksiyon
+    @SuppressLint("UnrememberedMutableState")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -73,6 +76,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 RoomsTheme {
+                    val wordsList1 = readWordsFromFile(this.context, lc)
                     val viewModel by viewModels<RoomViewModel>(
                         extrasProducer = {
                             defaultViewModelCreationExtras.withCreationCallback<
@@ -85,12 +89,14 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                     var showGameScreen by remember { mutableStateOf(false) }
 
                     if(state.isGamePlaying){
-                        val playerGame : Map<String,List<Int>> =
+                        val playerGame: MutableState<Map<String, List<Int>>> = mutableStateOf(
                             when(FirebaseAuth.getInstance().uid){
                                 state.player1Id -> state.player1Game
                                 state.player2Id -> state.player2Game
                                 else -> {state.player1Game}
                             }
+                        )
+
 
                         val playerWord : String =
                             when(FirebaseAuth.getInstance().uid){
@@ -98,6 +104,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 state.player2Id -> state.player2Word
                                 else -> {state.player1Word}
                             }
+
 
                         LaunchedEffect(state.player1Word, state.player2Word) {
                             if (state.player1Word.isNotEmpty() && state.player2Word.isNotEmpty()) {
@@ -107,9 +114,15 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 
                         Log.e(TAG, "oyun : $playerGame ", )
                         if (showGameScreen) {
-                            GameField(letterCount = lc, indexOfWord = playerGame.size, gameOfPlayer = playerGame) {
+                            val playerScore: Int =
+                                when (FirebaseAuth.getInstance().uid) {
+                                    state.player1Id -> state.player1Score
+                                    state.player2Id -> state.player2Score
+                                    else -> 0
+                                }
+                            GameField(letterCount = lc, indexOfWord = playerGame.value.size, gameOfPlayer = playerGame,playerScore = playerScore) {
                                     submittedText ->
-                                val response = viewModel.sendWord(submittedText,wordsList)
+                                val response = viewModel.sendWord(submittedText,wordsList1)
                                 Log.d("WordSelectionField", "Submitted word: $submittedText")
                                 Log.d("WordSelectionField", "Server response: $response")
 
@@ -127,7 +140,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         ){
                             WordSelectionField(letterCount = lc) {
                                 submittedText ->
-                                val response = viewModel.setWordForOtherPlayer(submittedText,wordsList)
+                                val response = viewModel.setWordForOtherPlayer(submittedText,wordsList1)
                                 Log.d("WordSelectionField", "Submitted word: $submittedText")
                                 Log.d("WordSelectionField", "Server response: $response")
 
@@ -309,22 +322,27 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 }
 
 
-private fun readWordsFromFile(context: Context?): List<String> {
+private fun readWordsFromFile(context: Context?, letterCount: Int): List<String> {
     val wordsList = mutableListOf<String>()
 
     try {
-        val inputStream = context!!.assets.open("assets/kelimeler.txt")
+        val inputStream = context!!.assets.open("kelimelerB.txt")
 
         BufferedReader(InputStreamReader(inputStream)).use { reader ->
             var line: String? = reader.readLine()
             while (line != null) {
-                wordsList.add(line)
+                if (line.length == letterCount) {
+                    wordsList.add(line)
+
+                }
                 line = reader.readLine()
             }
         }
     } catch (e: Exception) {
         e.printStackTrace()
+
     }
 
+    Log.d("readWordsFromFile", "Total words read: ${wordsList.size}")
     return wordsList
 }

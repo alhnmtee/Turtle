@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,11 +23,11 @@ import androidx.compose.ui.unit.dp
 fun GameField(
     letterCount : Int,
     indexOfWord : Int,
-    gameOfPlayer : Map<String,List<Int>>,
+    gameOfPlayer : MutableState<Map<String, List<Int>>>,
     initialValue :String = "",
+    playerScore: Int,
     submittedText : (String) -> Unit,
-
-    ) {
+) {
     var text by remember { mutableStateOf(initialValue) }
     // Display the characters of the word in individual boxes
     Column(
@@ -36,15 +38,17 @@ fun GameField(
 
 
     ) {
+        Text("Score: $playerScore")
         Column(
             modifier = Modifier.fillMaxWidth()
                 .padding(top=5.dp, bottom = 5.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
+
             for(i in 0..<letterCount){
                 if(i<indexOfWord){
-                    WordField(gameOfPlayer.values.toList()[i],letterCount, firstText = gameOfPlayer.keys.toList()[i])
+                    WordField(gameOfPlayer.value.values.toList()[i],letterCount, firstText = gameOfPlayer.value.keys.toList()[i])
                 }
                 else if( i == indexOfWord){
                     WordField(List(letterCount){0},letterCount, firstText = text)
@@ -87,16 +91,7 @@ fun GameField(
 
     }
 }
-@Preview
-@Composable
-fun PreviewGameField() {
-    GameField(
-        letterCount = 5,
-        indexOfWord = 0,
-        gameOfPlayer = mapOf("test" to List(5){0}),
-        submittedText = { }
-    )
-}
+
 
 
 
