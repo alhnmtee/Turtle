@@ -2,6 +2,8 @@ package data
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.classes.RoomState
@@ -13,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 //TODO bu düzeltilecek
@@ -78,6 +81,9 @@ class RoomViewModel @AssistedInject constructor(
     fun sendGameRequest(receiverId: String){
         viewModelScope.launch {
             client.sendServerMessage("send_game_request#$receiverId")
+            Log.e(TAG, "sendGameRequest: $receiverId", )
+            //tüm statei logla
+            Log.e(TAG, "sendGameRequest: "+_roomState.value, )
         }
     }
 
@@ -94,7 +100,6 @@ class RoomViewModel @AssistedInject constructor(
         }
 
     }
-
     fun setWordForOtherPlayer(word:String,wordsList : List<String>): Boolean {
         Log.d("setWordForOtherPlayer", "Attempting to send word: $word")
         return if(wordsList.contains(word)){

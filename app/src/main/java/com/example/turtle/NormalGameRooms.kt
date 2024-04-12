@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.AlertDialog
@@ -15,6 +16,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -28,6 +30,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.compose.rememberNavController
 import com.example.turtle.databinding.NormalGameRoomsBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.plcoding.onlinetictactoe.ui.theme.RoomsTheme
@@ -78,6 +81,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
             setContent {
                 RoomsTheme {
                     val wordsList1 = readWordsFromFile(this.context, lc)
+                    val navController = rememberNavController()
                     val viewModel by viewModels<RoomViewModel>(
                         extrasProducer = {
                             defaultViewModelCreationExtras.withCreationCallback<
@@ -97,8 +101,53 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 else -> {state.player1Game}
                             }
                         )
+                        val opponentGame: MutableState<Map<String, List<Int>>> = mutableStateOf(
+                            when(FirebaseAuth.getInstance().uid) {
+                                state.player1Id -> state.player2Game
+                                state.player2Id -> state.player1Game
+                                else -> state.player2Game
+                            }
+                        )
+                        val currentUserId = FirebaseAuth.getInstance().uid
 
+                        if (!state.playerWon.isNullOrEmpty()) {
+                            if (state.playerWon == currentUserId) {
+                                Toast.makeText(context, "Kazandınız, Tebrikler!", Toast.LENGTH_LONG).show()
+                            } else {
+                                AlertDialog(
+                                    onDismissRequest = { },
+                                    title = { Text(text = "Oyun Bitti") },
+                                    text = { Text("Rakip oyuncu kazandı") },
+                                    confirmButton = {
+                                        Button(
+                                            onClick = {
+                                                // Handle replay request here
+                                                val senderId = FirebaseAuth.getInstance().uid
+                                                val receiverId = when (senderId) {
+                                                    state.player1Id -> state.player2Id
+                                                    state.player2Id -> state.player1Id
+                                                    else -> null
+                                                }
+                                                if (receiverId != null && !state.requests.containsKey(senderId)) {
+                                                    viewModel.sendGameRequest(receiverId)
+                                                }
+                                            }
+                                        ) {
+                                            Text("Rövanş İste")
+                                        }
+                                    },
+                                    dismissButton = {
+                                        Button(
+                                            onClick = {
 
+                                            }
+                                        ) {
+                                            Text("Tamam")
+                                        }
+                                    }
+                                )
+                            }
+                        }
                         val playerWord : String =
                             when(FirebaseAuth.getInstance().uid){
                                 state.player1Id -> state.player1Word
@@ -121,16 +170,40 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                     state.player2Id -> state.player2Score
                                     else -> 0
                                 }
-                            GameField(letterCount = lc, indexOfWord = playerGame.value.size, gameOfPlayer = playerGame,playerScore = playerScore) {
-                                    submittedText ->
-                                if(state.playerWon!=FirebaseAuth.getInstance().uid){
-                                    val response = viewModel.sendWord(submittedText,wordsList1)
-                                }
-                                Log.d("WordSelectionField", "Submitted word: $submittedText")
-                                //Log.d("WordSelectionField", "Server response: $response")
 
-                                Log.d("WordSelectionField", "State: $state")
-                            }
+
+
+                            GameField(
+                                letterCount = lc,
+                                indexOfWord = playerGame.value.size,
+                                gameOfPlayer = playerGame,
+                                playerScore = playerScore,
+                                opponentGameOfPlayer = opponentGame,
+                                playerWon = state.playerWon,
+                                showKeyboard = true,
+                                /*onReplayRequest = {
+                                    val senderId = FirebaseAuth.getInstance().uid
+                                    val receiverId = when (senderId) {
+                                        state.player1Id -> state.player2Id
+                                        state.player2Id -> state.player1Id
+                                        else -> null
+                                    }
+                                    if (receiverId != null && !state.requests.containsKey(senderId)) {
+                                        viewModel.sendGameRequest(receiverId)
+                                    }
+                                }*/
+                                submittedText = { submittedText ->
+                                    if(state.playerWon!=FirebaseAuth.getInstance().uid){
+                                        val response = viewModel.sendWord(submittedText,wordsList1)
+                                        if (!response) {
+                                            Toast.makeText(context, "Lütfen geçerli bir kelime giriniz.", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                    Log.d("WordSelectionField", "Submitted word: $submittedText")
+                                    Log.d("WordSelectionField", "State: $state")
+                                }
+                            )
+
                             return@RoomsTheme
                         }
 
@@ -146,9 +219,12 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 val response = viewModel.setWordForOtherPlayer(submittedText,wordsList1)
                                 Log.d("WordSelectionField", "Submitted word: $submittedText")
                                 Log.d("WordSelectionField", "Server response: $response")
-
+                                if (!response) {
+                                    Toast.makeText(context, "Lütfen geçerli bir kelime giriniz.", Toast.LENGTH_LONG).show()
+                                }
+                                else
+                                    Toast.makeText(context, "Kelime gönderildi.Lütfen bekleyiniz", Toast.LENGTH_LONG).show()
                                 Log.d("WordSelectionField", "State: $state")
-
                             }
                             return@RoomsTheme
                         }

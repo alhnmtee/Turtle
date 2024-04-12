@@ -38,7 +38,7 @@ class Room(
 
     private val ongoingGames = ConcurrentHashMap<String, MutableStateFlow<RoomState>>()
 
-    
+
 
     init {
         state.onEach(::broadcast).launchIn(roomScope)
@@ -58,7 +58,7 @@ class Room(
         return player
     }
 
-   
+
 
     suspend fun broadcast(state: RoomState) {
         playerSockets.keys.forEach { key ->
@@ -105,7 +105,7 @@ class Room(
                     }
 
                     if(word == ongoingGame.value.player1Word && ongoingGame.value.playerWon==""){
-                      //  println("BİR OYUNCU OYUNU KAZANDI                     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBB")
+                        //  println("BİR OYUNCU OYUNU KAZANDI                     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBB")
                         ongoingGame.update {
                             it.copy(
                                 playerWon = uidSender,
@@ -138,17 +138,17 @@ class Room(
     suspend fun disconnectFromGame(uidSender : String){
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
-                ongoingGame.update { 
-                  it.copy(
-                    connectedPlayers = it.connectedPlayers - uidSender
-                  )  
+                ongoingGame.update {
+                    it.copy(
+                        connectedPlayers = it.connectedPlayers - uidSender
+                    )
                 }
-                
+
             }
             else{
-                
+
             }
-            
+
         }
     }
 
@@ -202,33 +202,97 @@ class Room(
 
 
     suspend fun denyGameRequest(uidSender: String, uidReciever: String){
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                ongoingGame.update {
+                    it.copy(
+                        requests = it.requests - ("$uidReciever"),
+                        rejectedPlayers = it.rejectedPlayers + uidReciever
+                    )
+                }
+                return
+            }
+            else{
+
+            }
+
+        }
         _state.update {
             it.copy(
                 requests = it.requests - ("$uidReciever"),
                 rejectedPlayers = it.rejectedPlayers + uidReciever
             )
         }
+
     }
 
     suspend fun confirmDenial(uidSender :String){
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                ongoingGame.update {
+                    it.copy(
+                        rejectedPlayers = it.rejectedPlayers - uidSender
+                    )
+                }
+                return
+            }
+            else{
+
+            }
+
+        }
         _state.update{
             it.copy(
                 rejectedPlayers = it.rejectedPlayers - uidSender
             )
         }
+
     }
 
     suspend fun sendGameRequest(uidSender: String, uidReciever: String) {
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                ongoingGame.update {
+                    it.copy(
+                        requests = it.requests + ("$uidSender" to "$uidReciever")
+                    )
+                }
+                return
+            }
+            else{
+
+            }
+
+        }
+
         //al json = Json.encodeToString(state)
         _state.update {
             it.copy(
                 requests = it.requests + ("$uidSender" to "$uidReciever")
             )
         }
+        broadcast(state.value)
+
     }
 
     suspend fun confirmGameRequest(uidSender: String, uidReciever: String , mode :String , letterCount :Int) {
-        
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                ongoingGame.update {
+                    it.copy(
+                        requests = it.requests - ("$uidReciever"),
+                        //playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidSender,
+                    )
+                }
+                broadcast(ongoingGame.value)
+                return
+            }
+            else{
+
+            }
+
+        }
+
         _state.update {
             it.copy(
                 requests = it.requests - ("$uidReciever"),
@@ -237,19 +301,15 @@ class Room(
         }
         _state.update {
             it.copy(
-                playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever 
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidReciever
             )
         }
         println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA : $state")
         startGame(uidSender, uidReciever , mode , letterCount)
+
     }
 
-    private fun startGame(uidSender: String, uidReciever: String,mode:String,letterCount : Int) {
-        if (ongoingGames.containsKey(uidReciever)) {
-            return
-        }
-
-        val newRoomState = MutableStateFlow(RoomState())
+    private suspend fun startGame(uidSender: String, uidReciever: String,mode:String,letterCount : Int) {
         var word :String= ""
         if(mode == "random"){
             //val wordsList = File("..../resources/kelimelerB.txt").useLines{ lines -> lines.filter {it.length == letterCount}.toList() }
@@ -257,6 +317,28 @@ class Room(
             //word = wordsList.get(randomIndex)
             word = ""
         }
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+                ongoingGame.update {
+                    it.copy(
+                        player1Word=word,
+                        player2Word=word,
+                        playerWon = "",
+                        player1Game=emptyMap(),
+                        player2Game=emptyMap(),
+                    )
+                }
+                return
+            }
+            else{
+
+            }
+
+        }
+
+
+        val newRoomState = MutableStateFlow(RoomState())
+
         newRoomState.update {
             it.copy(
                 isGamePlaying = true,
@@ -269,5 +351,6 @@ class Room(
         }
 
         ongoingGames.put(uidReciever, newRoomState)
+        broadcast(newRoomState.value)
     }
 }

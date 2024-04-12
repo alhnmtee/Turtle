@@ -25,6 +25,7 @@ fun WordSelectionField(
     submittedText : (String) -> Unit,
 ){
     var text by remember { mutableStateOf(word) }
+
     // Display the characters of the word in individual boxes
     Column(
         modifier = Modifier
@@ -56,8 +57,9 @@ fun WordSelectionField(
 
                 }
                 else if(key == '⏎'){
-                    if(text.length==letterCount)
+                    if(text.length==letterCount) {
                         submittedText(text)
+                    }
                 }
                 else {
                     if(text.length < letterCount)
