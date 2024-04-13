@@ -9,6 +9,8 @@ import kotlinx.serialization.serializer
 import com.example.classes.RoomState
 import java.util.concurrent.ConcurrentHashMap
 import java.io.File
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
@@ -21,13 +23,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.encodeToString
 import kotlin.random.Random
+import javax.naming.Context
 
-@Serializable
-data class GameState(
-    val isGamePlaying: Boolean = false,
-    val connectedPlayers: Set<String> = emptySet()
-)
 class Room(
+    val listOfWords : List<String>
 ) {
     private val _state = MutableStateFlow(RoomState())
     val state: StateFlow<RoomState> = _state
@@ -210,6 +209,7 @@ class Room(
                         rejectedPlayers = it.rejectedPlayers + uidReciever
                     )
                 }
+                broadcast(ongoingGame.value)
                 return
             }
             else{
@@ -234,6 +234,7 @@ class Room(
                         rejectedPlayers = it.rejectedPlayers - uidSender
                     )
                 }
+                broadcast(ongoingGame.value)
                 return
             }
             else{
@@ -257,6 +258,7 @@ class Room(
                         requests = it.requests + ("$uidSender" to "$uidReciever")
                     )
                 }
+                broadcast(ongoingGame.value)
                 return
             }
             else{
@@ -284,6 +286,7 @@ class Room(
                         //playersCurrentlyPlaying = it.playersCurrentlyPlaying + uidSender,
                     )
                 }
+                startGame(uidSender, uidReciever , mode , letterCount)
                 broadcast(ongoingGame.value)
                 return
             }
@@ -312,10 +315,11 @@ class Room(
     private suspend fun startGame(uidSender: String, uidReciever: String,mode:String,letterCount : Int) {
         var word :String= ""
         if(mode == "random"){
-            //val wordsList = File("..../resources/kelimelerB.txt").useLines{ lines -> lines.filter {it.length == letterCount}.toList() }
-            //val randomIndex = Random.nextInt(0, wordsList.size)
-            //word = wordsList.get(randomIndex)
-            word = ""
+            val newList = listOfWords.filter{it.length == letterCount}
+
+            val randomIndex = Random.nextInt(0, newList.size)
+            word = newList.get(randomIndex)
+
         }
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
@@ -328,6 +332,7 @@ class Room(
                         player2Game=emptyMap(),
                     )
                 }
+                broadcast(ongoingGame.value)
                 return
             }
             else{

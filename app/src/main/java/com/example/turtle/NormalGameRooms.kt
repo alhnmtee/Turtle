@@ -16,7 +16,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -110,6 +109,102 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         )
                         val currentUserId = FirebaseAuth.getInstance().uid
 
+
+                        if (state.rejectedPlayers.contains(FirebaseAuth.getInstance().uid)) {
+                            AlertDialog(
+                                onDismissRequest = {
+
+                                },
+                                title = {
+                                    Text(text = "Reddedildiniz")
+                                },
+                                text = {
+                                    Text("Gönderdiğiniz istek reddedildi")
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
+                                            viewModel.gotDenied()
+                                        }
+                                    ) {
+                                        Text("Tamam")
+                                    }
+                                },
+
+                                )
+                        }
+
+                        if (state.requests.containsValue(FirebaseAuth.getInstance().uid)) {
+
+                            var secondsLeft by remember { mutableStateOf(10) }
+                            var isTimerRunning by remember { mutableStateOf(true) }
+
+                            LaunchedEffect(Unit) {
+                                delay(1000)
+                                while (isTimerRunning && secondsLeft > 0) {
+                                    delay(1000)
+                                    secondsLeft--
+                                }
+                                if (isTimerRunning) {
+                                    val senderId = FirebaseAuth.getInstance().uid
+                                    val receiverId = state.requests.entries.find{ it.value == senderId}?.key
+                                    if (senderId != null && receiverId != null) {
+                                        viewModel.denyGame(senderId,receiverId)
+
+                                    }
+                                }
+                            }
+
+                            AlertDialog(
+                                onDismissRequest = {
+
+                                },
+                                title = {
+                                    Text(text = "Oyun isteği")
+                                },
+                                text = {
+                                    Text("Size bir Oyun isteği gönedrildi , Kabul ya da Red edebilirsiniz.")
+                                },
+                                confirmButton = {
+
+                                    Button(
+                                        onClick = {
+                                            val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
+                                            val receiverId = state.requests.entries.find{ it.value == senderId}?.key
+                                            if (senderId != null && receiverId != null) {
+                                                viewModel.startGame(senderId, receiverId)
+                                            }
+                                            Log.e(TAG, "isteği kabul et: ${state}", )
+                                        }
+                                    ) {
+                                        Text("Kabul Et ($secondsLeft saniye kaldı)")
+                                    }
+
+
+
+                                },
+                                dismissButton = {
+                                    Button(
+                                        onClick = {
+                                            val senderId = FirebaseAuth.getInstance().uid
+                                            val receiverId = state.requests.entries.find{ it.value == senderId}?.key
+                                            if (senderId != null && receiverId != null) {
+                                                viewModel.denyGame(senderId,receiverId)
+
+                                            }
+                                            Log.e(TAG, "isteği red et: ${state}", )
+
+                                        }
+                                    ) {
+                                        Text("Reddet")
+                                    }
+                                }
+                            )
+                        }
+
+
+
                         if (!state.playerWon.isNullOrEmpty()) {
                             if (state.playerWon == currentUserId) {
                                 Toast.makeText(context, "Kazandınız, Tebrikler!", Toast.LENGTH_LONG).show()
@@ -159,6 +254,9 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         LaunchedEffect(state.player1Word, state.player2Word) {
                             if (state.player1Word.isNotEmpty() && state.player2Word.isNotEmpty()) {
                                 showGameScreen = true
+                            }
+                            else{
+                                showGameScreen = false
                             }
                         }
 

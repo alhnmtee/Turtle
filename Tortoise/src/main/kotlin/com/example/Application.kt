@@ -5,19 +5,26 @@ import com.example.plugins.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.File
+import javax.naming.Context
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::module).start(wait = true);
 }
 
 fun Application.module() {
-    val room1 = Room()
-    val room2 = Room()
-    val room3 = Room()
 
-    val room4 = Room()
-    val room5 = Room()
-    val room6 = Room()
+    val wordsList = readWordsFromFile()
+
+    val room1 = Room(wordsList)
+    val room2 = Room(wordsList)
+    val room3 = Room(wordsList)
+
+    val room4 = Room(wordsList)
+    val room5 = Room(wordsList)
+    val room6 = Room(wordsList)
     
     configureSecurity()
     configureHTTP()
@@ -26,3 +33,11 @@ fun Application.module() {
     configureSockets()
     configureRouting(room1,room2,room3,room4,room5,room6)
 }
+
+
+private fun readWordsFromFile(): List<String> {
+    val wordsList = mutableListOf<String>()
+    File("src\\main\\kotlin\\com\\example\\kelimeler.txt").useLines() { wordsList.addAll(it) }
+    return wordsList
+}
+
