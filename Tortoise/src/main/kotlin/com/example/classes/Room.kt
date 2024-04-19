@@ -83,13 +83,15 @@ class Room(
     fun disconnectPlayer(player: String) {
         playerSockets.remove(player)
         _state.update {
-            it.copy(connectedPlayers = it.connectedPlayers - player)
+            it.copy(connectedPlayers = it.connectedPlayers - player,
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying - player)
+
         }
 
     }
 
 
-    //#TODO BU skorlama için girilen kelimeyi alıp skorlayan fonksiyon di mi?????
+
     suspend fun getWordFromPlayer(uidSender: String, word: String){
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
@@ -133,6 +135,27 @@ class Room(
             }
         }
     }
+    suspend fun playerWon(uidSender: String){
+        ongoingGames.values.forEach { ongoingGame ->
+            if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
+              if(uidSender == ongoingGame.value.player1Id){
+                    ongoingGame.update {
+                        it.copy(
+                            playerWon = ongoingGame.value.player2Id,
+                        )
+                    }
+                }
+                if(uidSender == ongoingGame.value.player2Id){
+                    ongoingGame.update {
+                        it.copy(
+                            playerWon = ongoingGame.value.player1Id,
+                        )
+                    }
+                }
+                broadcast(ongoingGame.value)
+            }
+        }
+    }
 
     suspend fun disconnectFromGame(uidSender : String){
         ongoingGames.values.forEach { ongoingGame ->
@@ -147,7 +170,12 @@ class Room(
             else{
 
             }
-
+            broadcast(ongoingGame.value)
+        }
+        _state.update {
+            it.copy(
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying - uidSender
+            )
         }
     }
 

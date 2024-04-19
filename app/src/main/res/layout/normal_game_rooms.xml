@@ -16,12 +16,12 @@
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/compose_view"
-        android:layout_width="356dp"
-        android:layout_height="666dp"
+        android:layout_width="400dp"
+        android:layout_height="720dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/game_mode_and_word_size_text_view"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.677" />
 </androidx.constraintlayout.widget.ConstraintLayout>

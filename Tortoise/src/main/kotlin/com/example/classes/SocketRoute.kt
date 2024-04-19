@@ -57,6 +57,9 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
                         if(type =="disconnect_from_game"){
                             room.disconnectFromGame(player)
                         }
+                        if(type=="player_won"){
+                            room.playerWon(player)
+                        }
 
                         //odalar için routing işlemi falan fişman yapılacak
                     }

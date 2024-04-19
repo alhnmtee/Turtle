@@ -1,5 +1,7 @@
 package fields
 
+import android.app.AlertDialog
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,13 +17,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun GameField(
@@ -34,12 +39,35 @@ fun GameField(
     showKeyboard: Boolean = true,
     playerWon: String?,
     //onReplayRequest: () -> Unit,
+    onButtonClick: () -> Unit,
     submittedText: (String) -> Unit,
-
-
 ) {
     var text by remember { mutableStateOf(initialValue) }
     var showOpponentField by remember { mutableStateOf(false) }
+    // var openDialog by remember { mutableStateOf(false) }
+
+    /*if (openDialog) {
+        androidx.compose.material.AlertDialog(
+            onDismissRequest = { openDialog = false },
+            title = { Text("Oyundan Çıkmak İstiyor Musunuz?Kaybedeceksiniz.") },
+            confirmButton = {
+                Button(onClick = {
+                    openDialog = false
+                }) {
+                    Text("Evet")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { openDialog = false }) {
+                    Text("Hayır")
+                }
+            }
+        )
+    }
+
+    BackHandler {
+        openDialog = true
+    }*/
 
     LazyColumn(
         modifier = Modifier.fillMaxSize()
@@ -52,10 +80,23 @@ fun GameField(
             ) {
                 Text("Score: $playerScore",color= Color.Red)
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(onClick = {
+                        showOpponentField = !showOpponentField
 
-                Button(onClick = { showOpponentField = !showOpponentField }) {
-                    Text("Rakibi Göster")
+                    }) {
+                        Text("Rakibi Göster")
+                    }
+                    Spacer(modifier = Modifier.width(16.dp)) // Add some space between the buttons
+
+                    Button(onClick = onButtonClick) {
+                        Text("Çıkış Yap")
+                    }
                 }
+
                 /*if (!playerWon.isNullOrEmpty()) {
                     Button(onClick = onReplayRequest) { // Use onReplayRequest here
                         Text("Tekrar Oyun İsteği Gönder")
@@ -113,8 +154,10 @@ fun GameField(
                 }
             }
         }
+
     }
 }
+
 
 @Composable
 fun OpponentGameField(

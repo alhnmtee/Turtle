@@ -86,6 +86,10 @@ class RoomViewModel @AssistedInject constructor(
             Log.e(TAG, "sendGameRequest: "+_roomState.value, )
         }
     }
+    fun playerWon(receiverId: String) {
+        sendMsg("player_won#$receiverId")
+        Log.e(TAG, state.value.toString())
+    }
 
     fun gotDenied() {
         sendMsg("got_denied#")
@@ -109,6 +113,10 @@ class RoomViewModel @AssistedInject constructor(
             false
         }
     }
+    fun disconnectFromGame(receiverId: String){
+        sendMsg("disconnect_from_game#$receiverId")
+        }
+
 
     private fun sendMsg(msg:String){
         viewModelScope.launch{
