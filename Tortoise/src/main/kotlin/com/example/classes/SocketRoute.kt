@@ -70,6 +70,7 @@ fun Route.socketRoom(room : Room,mode:String,letterCount:Int){
                 e.printStackTrace()
             }
             finally{
+                room.disconnectFromGame(player)
                 room.disconnectPlayer(player)
             }
 

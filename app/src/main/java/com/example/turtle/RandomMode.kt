@@ -57,7 +57,7 @@ class RandomMode : Fragment(R.layout.random_mode) {
     }
 
     private fun navigateToRandomGameRooms() {
-        findNavController().navigate(R.id.action_randomModeFragment_to_randomGameRoomsFragment)
+        findNavController().navigate(R.id.action_randomModeFragment_to_normalGameRoomsFragment)
     }
 
     private fun navigateToNormalGameRooms() {

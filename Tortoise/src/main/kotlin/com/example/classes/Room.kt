@@ -82,6 +82,7 @@ class Room(
 
     fun disconnectPlayer(player: String) {
         playerSockets.remove(player)
+
         _state.update {
             it.copy(connectedPlayers = it.connectedPlayers - player,
                 playersCurrentlyPlaying = it.playersCurrentlyPlaying - player)
@@ -164,6 +165,16 @@ class Room(
                     it.copy(
                         connectedPlayers = it.connectedPlayers - uidSender
                     )
+                }
+                if(ongoingGame.value.connectedPlayers.isEmpty()){
+                    try{
+                        ongoingGames.remove(ongoingGame.value.player1Id)
+                        ongoingGames.remove(ongoingGame.value.player2Id)
+                    }
+                    catch(e:Exception){
+                        ongoingGames.remove(ongoingGame.value.player2Id)
+                        println("Ongoing game not found")
+                    }
                 }
 
             }
@@ -359,7 +370,9 @@ class Room(
                         player1Game=emptyMap(),
                         player2Game=emptyMap(),
                     )
+
                 }
+                println("Game started with word $word")
                 broadcast(ongoingGame.value)
                 return
             }

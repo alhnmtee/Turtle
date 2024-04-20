@@ -274,12 +274,62 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 
                         Log.e(TAG, "oyun : $playerGame ", )
                         if (showGameScreen) {
+                            val navController = rememberNavController()
                             val playerScore: Int =
                                 when (FirebaseAuth.getInstance().uid) {
                                     state.player1Id -> state.player1Score
                                     state.player2Id -> state.player2Score
                                     else -> 0
                                 }
+                            var countdown by remember { mutableStateOf(10) }
+
+                            LaunchedEffect(key1 = countdown) {
+                                while (countdown > 0) {
+                                    delay(1000L)
+                                    countdown--
+                                }
+
+                            }
+                            if (countdown <= 0) {
+                                var secondsLeft by remember { mutableStateOf(10) }
+                                var isTimerRunning by remember { mutableStateOf(true) }
+                                var openDialog by remember { mutableStateOf(true) }
+
+                                LaunchedEffect(Unit) {
+                                    delay(1000)
+                                    while (isTimerRunning && secondsLeft > 0) {
+                                        delay(1000)
+                                        secondsLeft--
+                                    }
+                                    if (isTimerRunning) {
+                                        val uid = FirebaseAuth.getInstance().uid
+                                        if (uid != null) {
+                                            viewModel.playerWon(uid)
+                                            viewModel.disconnectFromGame(uid)
+                                            navController.popBackStack()
+                                        }
+                                    }
+                                }
+                                if(openDialog){
+                                    AlertDialog(
+                                        onDismissRequest = { isTimerRunning = false },
+                                        title = { Text(text = "Aktiflik") },
+                                        text = { Text("Lütfen oyuna devam ediniz.Bağlantınız kesilecek") },
+                                        confirmButton = {
+                                            Button(
+                                                onClick = { isTimerRunning = false
+                                                    openDialog = false
+                                                }
+                                            ) {
+                                                Text("Tamam($secondsLeft saniye kaldı)")
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+
+
+
                             var openDialog by remember { mutableStateOf(false) }
 
                             if(openDialog){
@@ -342,6 +392,9 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                         if (!response) {
                                             Toast.makeText(context, "Lütfen geçerli bir kelime giriniz.", Toast.LENGTH_LONG).show()
                                         }
+                                        if(response){
+                                            countdown = 60
+                                        }
                                     }
 
                                     Log.d("WordSelectionField", "Submitted word: $submittedText")
@@ -382,6 +435,8 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 
 
                         return@RoomsTheme
+
+
 
                     }
                     if (state.rejectedPlayers.contains(FirebaseAuth.getInstance().uid)) {
