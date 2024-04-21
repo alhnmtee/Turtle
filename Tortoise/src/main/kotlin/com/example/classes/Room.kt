@@ -16,6 +16,7 @@ import io.ktor.websocket.Frame
 import kotlinx.coroutines.flow.*
 
 import io.ktor.websocket.*
+import io.ktor.client.request.request
 import kotlinx.coroutines.*
 
 import kotlinx.coroutines.flow.launchIn
@@ -113,6 +114,7 @@ class Room(
                         ongoingGame.update {
                             it.copy(
                                 playerWon = uidSender,
+                                
                             )
                         }
                     }
@@ -130,6 +132,7 @@ class Room(
                         ongoingGame.update {
                             it.copy(
                                 playerWon = uidSender,
+                                
                             )
                         }
                     }
@@ -161,11 +164,13 @@ class Room(
     }
 
     suspend fun disconnectFromGame(uidSender : String){
+
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
                 ongoingGame.update {
                     it.copy(
-                        connectedPlayers = it.connectedPlayers - uidSender
+                        connectedPlayers = it.connectedPlayers - uidSender,
+                        requests = it.requests - uidSender
                     )
                 }
                 if(ongoingGame.value.connectedPlayers.isEmpty()){
@@ -178,6 +183,20 @@ class Room(
                         println("Ongoing game not found")
                     }
                 }
+                if(ongoingGame.value.playerWon == "" && ongoingGame.value.player1Id == uidSender){
+                    ongoingGame.update {
+                        it.copy(
+                            playerWon = it.player2Id
+                        )
+                    }
+                }
+                else if(ongoingGame.value.playerWon == "" && ongoingGame.value.player2Id == uidSender){
+                    ongoingGame.update {
+                        it.copy(
+                            playerWon = it.player1Id
+                        )
+                    }
+                }
                 broadcast(state.value)
             }
             else{
@@ -187,9 +206,25 @@ class Room(
         }
         _state.update {
             it.copy(
-                playersCurrentlyPlaying = it.playersCurrentlyPlaying - uidSender
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying - uidSender,
+                requests = it.requests - uidSender,
+                rejectedPlayers = it.rejectedPlayers - uidSender,
             )
         }
+
+        state.value.requests.forEach{
+            val key = it.key
+            val value = it.value
+            if(value==uidSender){
+                _state.update{
+                    it.copy(
+                        requests = it.requests - key,
+                        rejectedPlayers = it.rejectedPlayers + key
+                    )
+                }
+            }
+        }
+
         broadcast(state.value)
     }
 

@@ -20,7 +20,7 @@
         android:id="@+id/textView_welcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome to Turtle-Wordle!"
+        android:text="Turtle-Wordle'a Hoşgeldiniz ! "
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -32,7 +32,7 @@
         android:id="@+id/textView_choose_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Please choose a mode to play the game"
+        android:text="Oynamak için Oyun modu seçiniz"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -128,14 +128,38 @@
         app:layout_constraintStart_toStartOf="@+id/cardView_random_mode"
         app:layout_constraintTop_toBottomOf="@+id/cardView_random_mode" />
 
-    <Button
-        android:id="@+id/button_logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Logout"
+    <LinearLayout
+        android:layout_width="373dp"
+        android:layout_height="109dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/button_logout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Çıkış Yap"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginHorizontal="16dp"/>
+
+        <Button
+            android:id="@+id/button_change_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Kullanıcı Adı Değiştir"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginHorizontal="16dp"/>
+
+
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

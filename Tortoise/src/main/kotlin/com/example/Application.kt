@@ -21,17 +21,19 @@ fun Application.module() {
     val room1 = Room(wordsList)
     val room2 = Room(wordsList)
     val room3 = Room(wordsList)
-
     val room4 = Room(wordsList)
+
     val room5 = Room(wordsList)
     val room6 = Room(wordsList)
+    val room7 = Room(wordsList)
+    val room8 = Room(wordsList)
     
     configureSecurity()
     configureHTTP()
     configureMonitoring()
     configureSerialization()
     configureSockets()
-    configureRouting(room1,room2,room3,room4,room5,room6)
+    configureRouting(room1,room2,room3,room4,room5,room6,room7,room8)
 }
 
 

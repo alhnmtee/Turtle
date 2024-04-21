@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@android:color/system_on_primary_dark">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Kullanıcı Adınızı Değiştirniz"
+        android:textColor="@color/white"
+
+        />
+
+    <EditText
+        android:id="@+id/username_edittext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        >
+
+    </EditText>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_gravity="center">
+        <Button
+            android:id="@+id/username_cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="İptal"
+            android:gravity="center"
+            android:layout_marginHorizontal="15dp"
+
+        >
+        </Button>
+
+        <Button
+            android:id="@+id/username_confirm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Onayla"
+            android:gravity="center"
+            android:layout_marginHorizontal="15dp"
+        >
+        </Button>
+    </LinearLayout>
+
+
+
+    <!-- Add any other views you want in your popup -->
+
+</LinearLayout>

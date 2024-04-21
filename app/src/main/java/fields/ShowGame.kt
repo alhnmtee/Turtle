@@ -1,5 +1,7 @@
 package fields
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,8 +36,9 @@ fun ShowGame(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Log.e(TAG, "ShowGame: $gameOfPlayer", )
                 for (i in 0..<letterCount) {
-                    if(gameOfPlayer.value.size<=i){
+                    if(gameOfPlayer.value.size>i){
                         WordField(gameOfPlayer.value.values.toList()[i], letterCount, firstText = gameOfPlayer.value.keys.toList()[i])
 
                     }

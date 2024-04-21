@@ -34,6 +34,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.compose.rememberNavController
 import com.example.turtle.databinding.NormalGameRoomsBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.plcoding.onlinetictactoe.ui.theme.RoomsTheme
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.withCreationCallback
@@ -46,7 +47,6 @@ import fields.WordSelectionField
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import kotlin.random.Random
 
 
 @AndroidEntryPoint
@@ -147,7 +147,6 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             var isTimerRunning by remember { mutableStateOf(true) }
 
                             LaunchedEffect(Unit) {
-                                delay(1000)
                                 while (isTimerRunning && secondsLeft > 0) {
                                     delay(1000)
                                     secondsLeft--
@@ -170,7 +169,27 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                     Text(text = "Oyun isteği")
                                 },
                                 text = {
-                                    Text("Size bir Oyun isteği gönedrildi , Kabul ya da Red edebilirsiniz.")
+                                    val fireStoreCollectionReference = FirebaseFirestore.getInstance().collection("Usernames")
+                                    var sendingPlayerUid = ""
+                                    state.requests.entries.forEach {
+                                        if(it.value == FirebaseAuth.getInstance().uid){
+                                            sendingPlayerUid=it.key
+                                        }
+                                        else{
+
+                                        }
+                                    }
+                                    var playersUserName by remember { mutableStateOf<String>(sendingPlayerUid) }
+                                    LaunchedEffect(playersUserName) {
+                                        fireStoreCollectionReference.document(playersUserName).get().addOnSuccessListener { documentSnapshot ->
+                                            playersUserName = if (documentSnapshot.exists()) {
+                                                documentSnapshot.getString("username").toString()
+                                            } else {
+                                                playersUserName
+                                            }
+                                        }
+                                    }
+                                    Text("$playersUserName size bir Oyun isteği gönderdi!")
                                 },
                                 confirmButton = {
 
@@ -235,6 +254,16 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                     opponentGameOfPlayer = opponentGame,
                                     letterCount = lc,
                                     indexOfWord =playerGame.value.size,
+                                    playerWord = when(currentUserId){
+                                          state.player1Id -> state.player1Word
+                                          state.player2Id -> state.player2Word
+                                          else -> ""
+                                    },
+                                    opponentWord = when(currentUserId){
+                                        state.player1Id -> state.player2Word
+                                        state.player2Id -> state.player1Word
+                                        else -> ""
+                                    },
                                     onDuelButtonClick = { /*TODO*/ },
                                     onExitButtonClick = {
                                         val uid = FirebaseAuth.getInstance().uid
@@ -269,7 +298,16 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                         opponentGameOfPlayer = opponentGame,
                                         letterCount = lc,
                                         indexOfWord = playerGame.value.size,
-
+                                        playerWord = when(currentUserId){
+                                            state.player1Id -> state.player1Word
+                                            state.player2Id -> state.player2Word
+                                            else -> ""
+                                        },
+                                        opponentWord = when(currentUserId){
+                                            state.player1Id -> state.player2Word
+                                            state.player2Id -> state.player1Word
+                                            else -> ""
+                                        },
                                         onDuelButtonClick = {
                                             val senderId = FirebaseAuth.getInstance().uid
                                             val receiverId = when (senderId) {
@@ -339,7 +377,6 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 var openDialog by remember { mutableStateOf(true) }
 
                                 LaunchedEffect(Unit) {
-                                    delay(1000)
                                     while (isTimerRunning && secondsLeft > 0) {
                                         delay(1000)
                                         secondsLeft--
@@ -546,7 +583,6 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         var isTimerRunning by remember { mutableStateOf(true) }
 
                         LaunchedEffect(Unit) {
-                            delay(1000)
                             while (isTimerRunning && secondsLeft > 0) {
                                 delay(1000)
                                 secondsLeft--
@@ -569,7 +605,27 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 Text(text = "Oyun isteği")
                             },
                             text = {
-                                Text("Size bir Oyun isteği gönedrildi , Kabul ya da Red edebilirsiniz.")
+                                val fireStoreCollectionReference = FirebaseFirestore.getInstance().collection("Usernames")
+                                var sendingPlayerUid = ""
+                                state.requests.entries.forEach {
+                                    if(it.value == FirebaseAuth.getInstance().uid){
+                                        sendingPlayerUid=it.key
+                                    }
+                                    else{
+
+                                    }
+                                }
+                                var playersUserName by remember { mutableStateOf<String>(sendingPlayerUid) }
+                                LaunchedEffect(playersUserName) {
+                                    fireStoreCollectionReference.document(playersUserName).get().addOnSuccessListener { documentSnapshot ->
+                                        playersUserName = if (documentSnapshot.exists()) {
+                                            documentSnapshot.getString("username").toString()
+                                        } else {
+                                            playersUserName
+                                        }
+                                    }
+                                }
+                                Text("$playersUserName size bir Oyun isteği gönderdi!")
                             },
                             confirmButton = {
 
@@ -636,9 +692,9 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         if(state.connectedPlayers.isNotEmpty()){
                             val currentUserId = FirebaseAuth.getInstance().uid
                             val otherPlayers = state.connectedPlayers.filter { it != currentUserId }
-                            RoomField(state = state.copy(connectedPlayers = otherPlayers)){playerName ->
+                            RoomField(state = state.copy(connectedPlayers = otherPlayers),mode=mode, letterCount = lc){playerName ->
                                 // Handle player clicks here
-                                if(!state.requests.containsKey(currentUserId))
+                                if(!state.requests.containsKey(currentUserId) && !state.playersCurrentlyPlaying.contains(playerName))
                                     viewModel.sendGameRequest(playerName)
                                 Log.d(TAG, "Player clicked: $playerName")
                             }
@@ -674,7 +730,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
         val wordSize = loadWordSize()
         val gameMode = loadGameMode().toString()
 
-        binding.gameModeAndWordSizeTextView.text = "Selected game mode: $gameMode, Word size: $wordSize"
+        //binding.gameModeAndWordSizeTextView.text = "Selected game mode: $gameMode, Word size: $wordSize"
     }
 
     private fun loadWordSize(): Int {

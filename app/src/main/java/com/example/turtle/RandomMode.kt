@@ -32,6 +32,11 @@ class RandomMode : Fragment(R.layout.random_mode) {
         binding.button6Letters.setOnClickListener {
             saveGameSettings(6)
         }
+
+        binding.button7Letters.setOnClickListener{
+            saveGameSettings(7)
+        }
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().navigate(R.id.action_randomModeFragment_to_FirstFragment)
         }

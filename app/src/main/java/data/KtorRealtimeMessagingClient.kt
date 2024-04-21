@@ -34,7 +34,7 @@ class KtorRealtimeMessagingClient(
             if(currentCoroutineContext().isActive){
                 try{
                     session = client.webSocketSession {
-                        url("ws://192.168.125.129:8080/room/$mode/$letterCount/${FirebaseAuth.getInstance().currentUser?.uid}")
+                        url("ws://192.168.43.213:8080/room/$mode/$letterCount/${FirebaseAuth.getInstance().currentUser?.uid}")
                     }
                     val roomStates = session!!
                         .incoming

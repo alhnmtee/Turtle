@@ -46,7 +46,7 @@ fun WordSelectionField(
     }
 
 
-    // Display the characters of the word in individual boxes
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
