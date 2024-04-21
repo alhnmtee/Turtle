@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.classes.RoomState
+import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -90,6 +91,9 @@ class RoomViewModel @AssistedInject constructor(
         sendMsg("player_won#$receiverId")
         Log.e(TAG, state.value.toString())
     }
+    fun sendChar(char: Char,index:Int) {
+        sendMsg("send_char#$char#$index")
+    }
 
     fun gotDenied() {
         sendMsg("got_denied#")
@@ -117,6 +121,10 @@ class RoomViewModel @AssistedInject constructor(
         sendMsg("disconnect_from_game#$receiverId")
         }
 
+    fun disconnectFromWebsocket(receiverId: String){
+        sendMsg("disconnect_from_server#$receiverId")
+    }
+
 
     private fun sendMsg(msg:String){
         viewModelScope.launch{
@@ -127,8 +135,11 @@ class RoomViewModel @AssistedInject constructor(
 
     public override fun onCleared() {
         super.onCleared()
-        job?.cancel() // Cancel the job when ViewModel is cleared
+        job?.cancel() // Cas
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
         viewModelScope.launch {
+            disconnectFromGame(uid)
+            disconnectFromWebsocket(uid)
             client.close()
         }
     }

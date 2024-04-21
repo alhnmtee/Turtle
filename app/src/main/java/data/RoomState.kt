@@ -46,6 +46,7 @@ data class RoomState(
     val player1Score : Int = 0,
     val player2Score : Int = 0,
 
+    val randomCharIndex:Int = -1,
 
     ) {
 

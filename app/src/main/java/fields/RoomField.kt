@@ -16,18 +16,16 @@ fun RoomField (
     state: RoomState,
     onPlayerClicked : (String) -> Unit
 ){
-    // Odadaki oyuncların gösterilip , tıklama işlemi filan yaplıacağı yer burası
     Column() {
         // Display connected players
         Text("Connected Players:", modifier = Modifier.padding(8.dp))
         Column() {
             state.connectedPlayers.forEach { playerName ->
-                Text(text = playerName , color = Color.White , modifier = Modifier.clickable {
+                val playerStatus = if (state.playersCurrentlyPlaying.contains(playerName)) "(Oyunda)" else "(Lobide)"
+                Text(text = "$playerName $playerStatus" , color = Color.White , modifier = Modifier.clickable {
                     onPlayerClicked(playerName)
                 })
-
             }
         }
     }
 }
-

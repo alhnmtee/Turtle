@@ -26,9 +26,9 @@ fun Keyboard(
     onKeyPressed: (Char) -> Unit
 ) {
     val keyboardLayout = listOf(
-        listOf('E', 'R', 'T', 'Y', 'U','I', 'O', 'P', 'Ğ','Ü'),
-        listOf('A', 'S', 'D', 'F', 'G','H', 'J', 'K', 'L','Ş','İ'),
-        listOf( '⌫', 'Z', 'C', 'V', 'B','N', 'M', 'Ö', 'Ç','⏎'),
+        listOf('e', 'r', 't', 'y', 'u','ı', 'o', 'p', 'ğ','ü'),
+        listOf('a', 's', 'd', 'f', 'g','h', 'j', 'k', 'l','ş','i'),
+        listOf( '⌫', 'z', 'c', 'v', 'b','n', 'm', 'ö', 'ç','⏎'),
     )
 
     Column(

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -40,12 +41,12 @@ import data.RoomViewModel
 import data.RoomViewModelFactory
 import fields.GameField
 import fields.RoomField
+import fields.WinField
 import fields.WordSelectionField
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.Timer
-import java.util.TimerTask
+import kotlin.random.Random
 
 
 @AndroidEntryPoint
@@ -212,48 +213,90 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         if (!state.playerWon.isNullOrEmpty()) {
                             if (state.playerWon == currentUserId) {
                                 Toast.makeText(context, "Kazandınız, Tebrikler!", Toast.LENGTH_LONG).show()
+                                WinField(
+                                    playerWon = state.playerWon,
+                                    playerScore = when(currentUserId){
+                                        state.player1Id -> state.player1Score
+                                        state.player2Id -> state.player2Score
+                                        else -> 0
+                                    },
+                                    opponentScore = when(currentUserId){
+                                        state.player1Id -> state.player2Score
+                                        state.player2Id -> state.player1Score
+                                        else -> 0
+                                    },
+                                    player = currentUserId,
+                                    opponent = when(currentUserId){
+                                        state.player1Id -> state.player2Id
+                                        state.player2Id -> state.player1Id
+                                        else -> ""
+                                    },
+                                    gameOfPlayer = playerGame,
+                                    opponentGameOfPlayer = opponentGame,
+                                    letterCount = lc,
+                                    indexOfWord =playerGame.value.size,
+                                    onDuelButtonClick = { /*TODO*/ },
+                                    onExitButtonClick = {
+                                        val uid = FirebaseAuth.getInstance().uid
+                                        if (uid != null) {
+                                            viewModel.disconnectFromGame(uid)
+                                        }
+                                        Log.e(TAG, "onCreateView: ${state}", )
+                                    }
+                                )
                             } else {
-                                    AlertDialog(
-                                        onDismissRequest = {  },
-                                        title = { Text(text = "Oyun Bitti") },
-                                        text = { Text("Rakip oyuncu kazandı") },
-                                        confirmButton = {
-                                            Button(
-                                                onClick = {
-                                                    val senderId = FirebaseAuth.getInstance().uid
-                                                    val receiverId = when (senderId) {
-                                                        state.player1Id -> state.player2Id
-                                                        state.player2Id -> state.player1Id
-                                                        else -> null
-                                                    }
-                                                    if (receiverId != null && !state.requests.containsKey(
-                                                            senderId
-                                                        )
-                                                    ) {
-                                                        viewModel.sendGameRequest(receiverId)
-                                                    }
-                                                }
+                                Toast.makeText(context, "Kaybettiniz, Üzgünüm!", Toast.LENGTH_LONG).show()
+                                if (currentUserId != null) {
+                                    WinField(
+                                        playerWon = state.playerWon,
+                                        playerScore = when(currentUserId){
+                                            state.player1Id -> state.player1Score
+                                            state.player2Id -> state.player2Score
+                                            else -> 0
+                                        },
+                                        opponentScore = when(currentUserId){
+                                            state.player1Id -> state.player2Score
+                                            state.player2Id -> state.player1Score
+                                            else -> 0
+                                        },
+                                        player = currentUserId,
+                                        opponent = when(currentUserId){
+                                            state.player1Id -> state.player2Id
+                                            state.player2Id -> state.player1Id
+                                            else -> ""
+                                        },
+                                        gameOfPlayer = playerGame,
+                                        opponentGameOfPlayer = opponentGame,
+                                        letterCount = lc,
+                                        indexOfWord = playerGame.value.size,
+
+                                        onDuelButtonClick = {
+                                            val senderId = FirebaseAuth.getInstance().uid
+                                            val receiverId = when (senderId) {
+                                                state.player1Id -> state.player2Id
+                                                state.player2Id -> state.player1Id
+                                                else -> null
+                                            }
+                                            if (receiverId != null && !state.requests.containsKey(
+                                                    senderId
+                                                )
                                             ) {
-                                                Text("Rövanş İste")
+                                                viewModel.sendGameRequest(receiverId)
                                             }
                                         },
-                                        dismissButton = {
-                                            Button(
-                                                onClick = {
-                                                    val uid = FirebaseAuth.getInstance().uid
-                                                    if (uid != null) {
-                                                        viewModel.disconnectFromGame(uid)
-                                                    }
-                                                    Log.e(TAG, "onCreateView: ${state}", )
-                                                }
-                                            ) {
-                                                Text("Tamam")
+                                        onExitButtonClick = {
+                                            val uid = FirebaseAuth.getInstance().uid
+                                            if (uid != null) {
+                                                viewModel.disconnectFromGame(uid)
                                             }
+                                            Log.e(TAG, "onCreateView: ${state}", )
                                         }
                                     )
-
+                                }
                             }
+                            return@RoomsTheme
                         }
+
 
                         val playerWord : String =
                             when(FirebaseAuth.getInstance().uid){
@@ -369,8 +412,9 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 indexOfWord = playerGame.value.size,
                                 gameOfPlayer = playerGame,
                                 playerScore = playerScore,
-                                opponentGameOfPlayer = opponentGame,
                                 playerWon = state.playerWon,
+                                randomCharIndex = if(state.randomCharIndex != -1) state.randomCharIndex else -1,
+                                randomWord = if(state.randomCharIndex != -1) state.player1Word else "",
                                 showKeyboard = true,
                                 /*onReplayRequest = {
                                     val senderId = FirebaseAuth.getInstance().uid
@@ -413,8 +457,34 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 else -> false
                             }
                         ){
+                            //Kelime girmede Hiçbir şey yapılmadğı zaman yapılacaklar.
+                            var timerValue by remember { mutableStateOf(60) }
+
+                            val timer = object: CountDownTimer(60000, 1000) {
+                                override fun onTick(millisUntilFinished: Long) {
+                                    timerValue = (millisUntilFinished / 1000).toInt()
+                                }
+
+                                override fun onFinish() {
+                                    timerValue = 0
+                                    if(state.player1Word.isEmpty() && state.player2Word.isEmpty()){
+                                        viewModel.disconnectFromGame(FirebaseAuth.getInstance().uid!!)
+                                    } else if(state.player1Word.isNotEmpty() && state.player2Word.isEmpty()){
+                                        viewModel.playerWon(state.player2Id)
+                                        viewModel.disconnectFromGame(state.player2Id)
+                                    } else if(state.player1Word.isEmpty() && state.player2Word.isNotEmpty()){
+                                        viewModel.playerWon(state.player1Id)
+                                        viewModel.disconnectFromGame(state.player1Id)
+                                    }
+                                }
+                            }
+
+                            LaunchedEffect(key1 = true) {
+                                timer.start()
+                            }
+
                             WordSelectionField(letterCount = lc) {
-                                submittedText ->
+                                    submittedText ->
                                 val response = viewModel.setWordForOtherPlayer(submittedText,wordsList1)
                                 Log.d("WordSelectionField", "Submitted word: $submittedText")
                                 Log.d("WordSelectionField", "Server response: $response")
@@ -427,6 +497,12 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             }
                             return@RoomsTheme
                         }
+
+
+
+
+
+
 
 
                         LaunchedEffect(state.player1Word, state.player2Word) {
@@ -499,7 +575,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 
                                     Button(
                                         onClick = {
-                                            val senderId = FirebaseAuth.getInstance().uid // Get the ID of the user who sent the request
+                                            val senderId = FirebaseAuth.getInstance().uid
                                             val receiverId = state.requests.entries.find{ it.value == senderId}?.key
                                             if (senderId != null && receiverId != null) {
                                                 viewModel.startGame(senderId, receiverId)
@@ -558,9 +634,11 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         //oyuncuların sıralandığı yer
                         Log.e(TAG, "onCreateView: ${state.connectedPlayers}", )
                         if(state.connectedPlayers.isNotEmpty()){
-                            RoomField(state = state){playerName ->
+                            val currentUserId = FirebaseAuth.getInstance().uid
+                            val otherPlayers = state.connectedPlayers.filter { it != currentUserId }
+                            RoomField(state = state.copy(connectedPlayers = otherPlayers)){playerName ->
                                 // Handle player clicks here
-                                if(!state.requests.containsKey(FirebaseAuth.getInstance().uid))
+                                if(!state.requests.containsKey(currentUserId))
                                     viewModel.sendGameRequest(playerName)
                                 Log.d(TAG, "Player clicked: $playerName")
                             }
@@ -612,7 +690,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        //viewModel.onCleared()
+        viewModel.onCleared()
     }
 }
 

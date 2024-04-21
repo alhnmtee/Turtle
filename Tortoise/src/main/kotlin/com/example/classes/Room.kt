@@ -29,7 +29,7 @@ class Room(
     val listOfWords : List<String>
 ) {
     private val _state = MutableStateFlow(RoomState())
-    val state: StateFlow<RoomState> = _state
+    private val state: StateFlow<RoomState> = _state
 
     private val playerSockets = ConcurrentHashMap<String, WebSocketSession>()
 
@@ -64,7 +64,7 @@ class Room(
             if (state.playersCurrentlyPlaying.contains(key)) {
                 ongoingGames.values.forEach { ongoingGame ->
                     if (ongoingGame.value.connectedPlayers.contains(key)) {
-                        println("Oyun oynaya giden oda State: $ongoingGame")
+                        println("Oyun oynaya giden oda State: $ongoingGame.value")
                         playerSockets[key]!!.send(
                             Json.encodeToString(RoomState.serializer(),ongoingGame.value)
                         )
@@ -80,12 +80,14 @@ class Room(
         }
     }
 
-    fun disconnectPlayer(player: String) {
+    suspend fun disconnectPlayer(player: String) {
         playerSockets.remove(player)
-
+        disconnectFromGame(player)
         _state.update {
-            it.copy(connectedPlayers = it.connectedPlayers - player,
-                playersCurrentlyPlaying = it.playersCurrentlyPlaying - player)
+            it.copy(
+                connectedPlayers = it.connectedPlayers - player,
+                playersCurrentlyPlaying = it.playersCurrentlyPlaying - player
+            )
 
         }
 
@@ -132,7 +134,7 @@ class Room(
                         }
                     }
                 }
-                broadcast(ongoingGame.value)
+                broadcast(state.value)
             }
         }
     }
@@ -153,7 +155,7 @@ class Room(
                         )
                     }
                 }
-                broadcast(ongoingGame.value)
+                broadcast(state.value)
             }
         }
     }
@@ -176,18 +178,19 @@ class Room(
                         println("Ongoing game not found")
                     }
                 }
-
+                broadcast(state.value)
             }
             else{
 
             }
-            broadcast(ongoingGame.value)
+
         }
         _state.update {
             it.copy(
                 playersCurrentlyPlaying = it.playersCurrentlyPlaying - uidSender
             )
         }
+        broadcast(state.value)
     }
 
     private suspend fun getWordScore(word:String , answerWord : String) : List<Int> {
@@ -228,7 +231,7 @@ class Room(
                     }
                     println("player1Word set to $word")
                 }
-                broadcast(ongoingGame.value)
+                broadcast(state.value)
             }
             else{
                 println("Player not found in ongoing games")
@@ -248,7 +251,7 @@ class Room(
                         rejectedPlayers = it.rejectedPlayers + uidReciever
                     )
                 }
-                broadcast(ongoingGame.value)
+                broadcast(state.value)
                 return
             }
             else{
@@ -273,7 +276,7 @@ class Room(
                         rejectedPlayers = it.rejectedPlayers - uidSender
                     )
                 }
-                broadcast(ongoingGame.value)
+                broadcast(state.value)
                 return
             }
             else{
@@ -297,7 +300,7 @@ class Room(
                         requests = it.requests + ("$uidSender" to "$uidReciever")
                     )
                 }
-                broadcast(ongoingGame.value)
+                broadcast(state.value)
                 return
             }
             else{
@@ -326,7 +329,7 @@ class Room(
                     )
                 }
                 startGame(uidSender, uidReciever , mode , letterCount)
-                broadcast(ongoingGame.value)
+                //broadcast(ongoingGame.value)
                 return
             }
             else{
@@ -360,6 +363,7 @@ class Room(
             word = newList.get(randomIndex)
 
         }
+
         ongoingGames.values.forEach { ongoingGame ->
             if (ongoingGame.value.connectedPlayers.contains(uidSender)) {
                 ongoingGame.update {
@@ -373,7 +377,15 @@ class Room(
 
                 }
                 println("Game started with word $word")
-                broadcast(ongoingGame.value)
+                if(mode=="random"){
+                    val randomCharIndex = Random.nextInt(0, word.length)
+                    ongoingGame.update {
+                        it.copy(
+                            randomCharIndex = randomCharIndex
+                        )
+                    }
+                }
+                broadcast(state.value)
                 return
             }
             else{
@@ -397,6 +409,14 @@ class Room(
         }
 
         ongoingGames.put(uidReciever, newRoomState)
-        broadcast(newRoomState.value)
+        if(mode=="random"){
+            val randomCharIndex = Random.nextInt(0, word.length)
+            newRoomState.update {
+                it.copy(
+                    randomCharIndex = randomCharIndex
+                )
+        }
+        broadcast(state.value)
     }
+}
 }

@@ -1,6 +1,8 @@
 package fields
 
 import android.app.AlertDialog
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,17 +35,18 @@ fun GameField(
     letterCount: Int,
     indexOfWord: Int,
     gameOfPlayer: MutableState<Map<String, List<Int>>>,
-    opponentGameOfPlayer: MutableState<Map<String, List<Int>>>,
     initialValue: String = "",
     playerScore: Int,
     showKeyboard: Boolean = true,
     playerWon: String?,
+    randomCharIndex: Int=-1,
+    randomWord: String="",
+    showQuitButton: Boolean = true,
     //onReplayRequest: () -> Unit,
     onButtonClick: () -> Unit,
     submittedText: (String) -> Unit,
 ) {
     var text by remember { mutableStateOf(initialValue) }
-    var showOpponentField by remember { mutableStateOf(false) }
     // var openDialog by remember { mutableStateOf(false) }
 
     /*if (openDialog) {
@@ -69,10 +72,10 @@ fun GameField(
         openDialog = true
     }*/
 
-    LazyColumn(
+    Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        item {
+
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
@@ -84,16 +87,11 @@ fun GameField(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Button(onClick = {
-                        showOpponentField = !showOpponentField
-
-                    }) {
-                        Text("Rakibi Göster")
-                    }
                     Spacer(modifier = Modifier.width(16.dp)) // Add some space between the buttons
-
-                    Button(onClick = onButtonClick) {
-                        Text("Çıkış Yap")
+                    if (showQuitButton) {
+                        Button(onClick = onButtonClick) {
+                            Text("Çıkış Yap")
+                        }
                     }
                 }
 
@@ -103,9 +101,6 @@ fun GameField(
                     }
                 }*/
 
-                if (showOpponentField) {
-                    OpponentGameField(letterCount, indexOfWord, opponentGameOfPlayer)
-                }
 
                 Spacer(modifier = Modifier.height(16.dp)) // Boşluk eklendi
 
@@ -122,16 +117,61 @@ fun GameField(
                                 firstText = gameOfPlayer.value.keys.toList()[i]
                             )
                         } else if (i == indexOfWord) {
-                            WordField(List(letterCount) { 0 }, letterCount, firstText = text)
+                            if(randomCharIndex!=-1){
+                                val listis = List(letterCount) { 0 }.toMutableList()
+                                listis[randomCharIndex] = 10
+                                var textis=""
+                                for (j in 0 until letterCount){
+                                    if(j==randomCharIndex)
+                                        textis+=randomWord[randomCharIndex]
+                                    else if (j<text.length){
+                                        textis+=text[j]
+                                    }
+                                    else if(j>randomCharIndex){
+                                        textis+=""
+                                    }
+                                    else{
+                                        textis+=" "
+                                    }
+
+                                }
+                                if(text.length == randomCharIndex){
+                                    text = textis
+                                }
+
+                                WordField(listis, letterCount, firstText = textis)
+                            }
+                            else{
+                                WordField(List(letterCount) { 0 }, letterCount, firstText = text)
+                            }
+
+
                         } else {
-                            WordField(List(letterCount) { 0 }, letterCount, firstText = "")
+                            if(randomCharIndex!=-1){
+                                val listis = List(letterCount) { 0 }.toMutableList()
+                                listis[randomCharIndex] = 10
+                                var textis=""
+                                for (j in 0 until letterCount){
+                                    if(j==randomCharIndex)
+                                        textis+=randomWord[randomCharIndex]
+                                    else
+                                        textis+=" "
+
+                                }
+                                //text = text.substring(0,randomCharIndex)+randomWord[randomCharIndex]+text.substring(randomCharIndex+1)
+                                WordField(listis, letterCount, firstText = textis)
+
+                            }
+                            else{
+                                WordField(List(letterCount) { 0 }, letterCount, firstText = "")}
+
                         }
                     }
                 }
             }
-        }
+
         if (showKeyboard) {
-            item {
+
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
@@ -139,8 +179,18 @@ fun GameField(
                 ) {
                     Keyboard(onKeyPressed = { key ->
                         if (key == '⌫') {
-                            if (text.isNotEmpty())
+                            if (text.isNotEmpty() && randomCharIndex!=-1 && (text.length== randomCharIndex +1 || text.length== randomCharIndex +2))
+                            {
+                                text = text.dropLast(2)
+                                Log.e(TAG, "eğer denkse yeşsinden silindi" )
+                            }
+
+                            else if (text.isNotEmpty()){
                                 text = text.dropLast(1)
+                                Log.e(TAG, "Normal silinmeden silindi " )
+                            }
+
+
                         } else if (key == '⏎') {
                             if (text.length == letterCount) {
                                 submittedText(text)
@@ -152,40 +202,9 @@ fun GameField(
                         }
                     })
                 }
-            }
+
         }
 
     }
 }
 
-
-@Composable
-fun OpponentGameField(
-    letterCount: Int,
-    indexOfWord: Int,
-    gameOfPlayer: MutableState<Map<String, List<Int>>>,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            for (i in 0 until letterCount) {
-                if (i < indexOfWord) {
-                    WordField(
-                        gameOfPlayer.value.values.toList()[i],
-                        letterCount,
-                        firstText = gameOfPlayer.value.keys.toList()[i]
-                    )
-                } else {
-                    WordField(List(letterCount) { 0 }, letterCount, firstText = "")
-                }
-            }
-        }
-    }
-}
