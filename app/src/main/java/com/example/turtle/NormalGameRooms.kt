@@ -362,7 +362,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                     state.player2Id -> state.player2Score
                                     else -> 0
                                 }
-                            var countdown by remember { mutableStateOf(10) }
+                            var countdown by remember { mutableStateOf(60) }
 
                             LaunchedEffect(key1 = countdown) {
                                 while (countdown > 0) {
@@ -399,6 +399,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                             Button(
                                                 onClick = { isTimerRunning = false
                                                     openDialog = false
+                                                    countdown = 60
                                                 }
                                             ) {
                                                 Text("Tamam($secondsLeft saniye kaldı)")
@@ -453,17 +454,6 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 randomCharIndex = if(state.randomCharIndex != -1) state.randomCharIndex else -1,
                                 randomWord = if(state.randomCharIndex != -1) state.player1Word else "",
                                 showKeyboard = true,
-                                /*onReplayRequest = {
-                                    val senderId = FirebaseAuth.getInstance().uid
-                                    val receiverId = when (senderId) {
-                                        state.player1Id -> state.player2Id
-                                        state.player2Id -> state.player1Id
-                                        else -> null
-                                    }
-                                    if (receiverId != null && !state.requests.containsKey(senderId)) {
-                                        viewModel.sendGameRequest(receiverId)
-                                    }
-                                }*/
                                 onButtonClick = {
                                     openDialog = true
                                 },
@@ -481,6 +471,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                     Log.d("WordSelectionField", "Submitted word: $submittedText")
                                     Log.d("WordSelectionField", "State: $state")
                                 }
+
 
                             )
 
