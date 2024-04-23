@@ -230,14 +230,31 @@ class Room(
 
     private suspend fun getWordScore(word:String , answerWord : String) : List<Int> {
         val array = Array(answerWord.length){0}
+        val letterCounts: MutableMap<Char, Int> = mutableMapOf()
+
+        for (letter: Char in answerWord) {
+            if (letterCounts.containsKey(letter)) {
+                letterCounts[letter] = letterCounts[letter]!! + 1
+            } else {
+                letterCounts[letter] = 1
+            }
+        }
+
         for(i in 0..<answerWord.length){
             if(word.get(i) == answerWord.get(i)){
                 array[i]=10
-            }
-            else if(answerWord.contains(word.get(i))){
-                array[i]=5
+                letterCounts[answerWord.get(i)] = letterCounts[answerWord.get(i)]?.minus(1) ?: 0
             }
         }
+
+        for(i in 0..<answerWord.length){
+            if(answerWord.contains(word.get(i)) && array[i]==0 && letterCounts[word[i]] ?: 0 > 0){
+                array[i]=5
+                letterCounts[answerWord.get(i)] = letterCounts[answerWord.get(i)]?.minus(1) ?: 0
+            }
+        }
+        
+
         return array.toList()
     }
 

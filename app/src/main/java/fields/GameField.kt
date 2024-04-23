@@ -29,9 +29,9 @@ fun GameField(
     letterCount: Int,
     indexOfWord: Int,
     gameOfPlayer: MutableState<Map<String, List<Int>>>,
+    opponentGame :MutableState<Map<String, List<Int>>>,
     initialValue: String = "",
     playerScore: Int,
-    showKeyboard: Boolean = true,
     playerWon: String?,
     randomCharIndex: Int=-1,
     randomWord: String="",
@@ -41,6 +41,8 @@ fun GameField(
     submittedText: (String) -> Unit,
 ) {
     var text by remember { mutableStateOf(initialValue) }
+    var showOtherPlayer by remember { mutableStateOf(false) }
+    var showKeyboard by remember { mutableStateOf(true) }
     // var openDialog by remember { mutableStateOf(false) }
 
     /*if (openDialog) {
@@ -65,16 +67,36 @@ fun GameField(
     BackHandler {
         openDialog = true
     }*/
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
 
-            LazyColumn(
+
+
+
+
+
+
+
+        LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+
+                item{
+                    Button(onClick =  {showOtherPlayer = !showOtherPlayer
+                        showKeyboard=!showKeyboard
+                    }) {
+                        Text(text = "Rakibi Göster / Gizle")
+                    }
+
+                }
+                item{
+                    if(showOtherPlayer){
+                        ShowGame(letterCount,opponentGame)
+                    }
+                }
                 item{
                     Text("Score: $playerScore",color= Color.Red)
 

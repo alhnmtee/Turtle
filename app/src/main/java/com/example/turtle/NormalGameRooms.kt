@@ -47,6 +47,7 @@ import fields.WordSelectionField
 import kotlinx.coroutines.delay
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import kotlin.random.Random
 
 
 @AndroidEntryPoint
@@ -83,7 +84,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 RoomsTheme {
-                    val wordsList1 = readWordsFromFile(this.context, lc)
+                    val wordsList1 = readWordsFromFile(this.context, lc).filter{it.length == lc}
                     val navController = rememberNavController()
                     val viewModel by viewModels<RoomViewModel>(
                         extrasProducer = {
@@ -413,6 +414,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
 
                             var openDialog by remember { mutableStateOf(false) }
 
+
                             if(openDialog){
                                 AlertDialog(
                                     onDismissRequest = { openDialog = false },
@@ -443,42 +445,50 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             }
                             BackHandler {
                                 openDialog = true
+
                             }
 
+
+
+
+
                             GameField(
-                                letterCount = lc,
-                                indexOfWord = playerGame.value.size,
-                                gameOfPlayer = playerGame,
-                                playerScore = playerScore,
-                                playerWon = state.playerWon,
-                                randomCharIndex = if(state.randomCharIndex != -1) state.randomCharIndex else -1,
-                                randomWord = if(state.randomCharIndex != -1) state.player1Word else "",
-                                showKeyboard = true,
-                                onButtonClick = {
-                                    openDialog = true
-                                },
-                                submittedText = { submittedText ->
-                                    if(state.playerWon!=FirebaseAuth.getInstance().uid){
-                                        val response = viewModel.sendWord(submittedText,wordsList1)
-                                        if (!response) {
-                                            Toast.makeText(context, "Lütfen geçerli bir kelime giriniz.", Toast.LENGTH_LONG).show()
+                                    letterCount = lc,
+                                    indexOfWord = playerGame.value.size,
+                                    gameOfPlayer = playerGame,
+                                    playerScore = playerScore,
+                                    opponentGame = opponentGame,
+                                    playerWon = state.playerWon,
+                                    randomCharIndex = if(state.randomCharIndex != -1) state.randomCharIndex else -1,
+                                    randomWord = if(state.randomCharIndex != -1) state.player1Word else "",
+                                    onButtonClick = {
+                                        openDialog = true
+                                    },
+                                    submittedText = { submittedText ->
+                                        if(state.playerWon!=FirebaseAuth.getInstance().uid){
+                                            val response = viewModel.sendWord(submittedText,wordsList1)
+                                            if (!response) {
+                                                Toast.makeText(context, "Lütfen geçerli bir kelime giriniz.", Toast.LENGTH_LONG).show()
+                                            }
+                                            if(response){
+                                                countdown = 60
+                                            }
                                         }
-                                        if(response){
-                                            countdown = 60
-                                        }
+
+                                        Log.d("WordSelectionField", "Submitted word: $submittedText")
+                                        Log.d("WordSelectionField", "State: $state")
                                     }
 
-                                    Log.d("WordSelectionField", "Submitted word: $submittedText")
-                                    Log.d("WordSelectionField", "State: $state")
-                                }
+
+                                )
 
 
-                            )
+
 
                             return@RoomsTheme
                         }
 
-                        if(mode == "normal" &&
+                        if((mode == "normal" || mode == "letter") &&
                             when (FirebaseAuth.getInstance().uid) {
                                 state.player1Id -> state.player2Word!=" "
                                 state.player2Id -> state.player1Word!=" "
@@ -487,6 +497,17 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         ){
                             //Kelime girmede Hiçbir şey yapılmadğı zaman yapılacaklar.
                             var timerValue by remember { mutableStateOf(60) }
+                            var randomLetter by remember { mutableStateOf("") }
+                            var randomLetterIndex by remember { mutableStateOf(-1) }
+
+
+                            if(mode == "letter" && randomLetterIndex==-1){
+                                val randomWord :String = wordsList1.get(Random.nextInt(0,wordsList1.size))
+                                randomLetterIndex = Random.nextInt(0,lc)
+                                randomLetter = randomWord[randomLetterIndex].toString()
+                            }
+
+
 
                             val timer = object: CountDownTimer(60000, 1000) {
                                 override fun onTick(millisUntilFinished: Long) {
@@ -511,7 +532,10 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                 timer.start()
                             }
 
-                            WordSelectionField(letterCount = lc) {
+
+
+
+                            WordSelectionField(letterCount = lc, randomLetter = randomLetter, randomCharIndex = randomLetterIndex) {
                                     submittedText ->
                                 val response = viewModel.setWordForOtherPlayer(submittedText,wordsList1)
                                 Log.d("WordSelectionField", "Submitted word: $submittedText")

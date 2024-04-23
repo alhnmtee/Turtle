@@ -96,6 +96,13 @@ class FirstFragment : Fragment(R.layout.fragment_first) {
                 .build()
             findNavController().navigate(R.id.action_FirstFragment_to_RandomMode, null, navOptions)
         }
+        binding.buttonRandomLetterMode.setOnClickListener {
+            saveGameMode("letter")
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo(R.id.FirstFragment, true)
+                .build()
+            findNavController().navigate(R.id.action_FirstFragment_to_RandomMode, null, navOptions)
+        }
     }
 
     private fun saveGameMode(mode: String) {

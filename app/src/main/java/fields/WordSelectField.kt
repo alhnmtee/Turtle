@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun WordSelectionField(
     word: String = "",
+    randomCharIndex : Int= -1,
+    randomLetter :String = "",
     letterCount : Int,
     submittedText : (String) -> Unit,
 ){
@@ -62,8 +64,34 @@ fun WordSelectionField(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
-            WordField(scoreOfTheWord = List(letterCount){0},letterCount,firstText=text)
-            Text(text = "Remaining time: $timerValue seconds",color= Color.Cyan)
+            if(randomCharIndex!=-1){
+                val listis = List(letterCount) { 0 }.toMutableList()
+                listis[randomCharIndex] = 10
+                var textis=""
+                for (j in 0 until letterCount){
+                    if(j==randomCharIndex)
+                        textis+=randomLetter
+                    else if (j<text.length){
+                        textis+=text[j]
+                    }
+                    else if(j>randomCharIndex){
+                        textis+=""
+                    }
+                    else{
+                        textis+=" "
+                    }
+
+                }
+                if(text.length == randomCharIndex){
+                    text = textis
+                }
+
+                WordField(scoreOfTheWord = List(letterCount){0}, letterCount, firstText = textis)
+            }
+            else{
+                WordField(scoreOfTheWord = List(letterCount){0},letterCount,firstText=text)
+                Text(text = "Remaining time: $timerValue seconds",color= Color.Cyan)
+            }
         }
         Column (modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom,
@@ -72,9 +100,16 @@ fun WordSelectionField(
             Keyboard(onKeyPressed = { key ->
                 Log.e(TAG, "basılan tuş: $key", )
                 if(key == '⌫'){
-                    if(text.isNotEmpty())
-                        text = text.dropLast(1)
+                    if (text.isNotEmpty() && randomCharIndex!=-1 && (text.length== randomCharIndex +1 || text.length== randomCharIndex +2))
+                    {
+                        text = text.dropLast(2)
+                        Log.e(TAG, "eğer denkse yeşsinden silindi" )
+                    }
 
+                    else if (text.isNotEmpty()){
+                        text = text.dropLast(1)
+                        Log.e(TAG, "Normal silinmeden silindi " )
+                    }
                 }
                 else if(key == '⏎'){
                     if(text.length==letterCount) {
