@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -32,6 +35,8 @@ fun GameField(
     opponentGame :MutableState<Map<String, List<Int>>>,
     initialValue: String = "",
     playerScore: Int,
+    opponentScore: Int,
+    timerValue: Int,
     playerWon: String?,
     randomCharIndex: Int=-1,
     randomWord: String="",
@@ -43,40 +48,10 @@ fun GameField(
     var text by remember { mutableStateOf(initialValue) }
     var showOtherPlayer by remember { mutableStateOf(false) }
     var showKeyboard by remember { mutableStateOf(true) }
-    // var openDialog by remember { mutableStateOf(false) }
 
-    /*if (openDialog) {
-        androidx.compose.material.AlertDialog(
-            onDismissRequest = { openDialog = false },
-            title = { Text("Oyundan Çıkmak İstiyor Musunuz?Kaybedeceksiniz.") },
-            confirmButton = {
-                Button(onClick = {
-                    openDialog = false
-                }) {
-                    Text("Evet")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { openDialog = false }) {
-                    Text("Hayır")
-                }
-            }
-        )
-    }
-
-    BackHandler {
-        openDialog = true
-    }*/
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().padding(16.dp),
     ) {
-
-
-
-
-
-
-
 
         LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
@@ -98,12 +73,19 @@ fun GameField(
                     }
                 }
                 item{
-                    Text("Score: $playerScore",color= Color.Red)
+                    Text("Score: $playerScore",color= Color.Red )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        CircularProgressIndicator(
+                            progress = timerValue / 60f,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text("$timerValue s", color= Color.Red)
                         Spacer(modifier = Modifier.width(16.dp))
                         if (showQuitButton) {
                             Button(onClick = onButtonClick) {
@@ -180,7 +162,6 @@ fun GameField(
                         }
                     }
                 }
-
             }
 
         if (showKeyboard) {

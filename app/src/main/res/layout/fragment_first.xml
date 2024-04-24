@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/arkaplan"
     android:padding="2dp">
 
     <ImageView
@@ -15,6 +16,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="5dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Alihan Mete ve Hüseyin Kırcı tarafından geliştirilmiştir"
+        android:textColor="@color/cardview_dark_background"
+        android:textSize="3sp"
+        tools:layout_editor_absoluteX="323dp"
+        tools:layout_editor_absoluteY="2dp"/>
+
+
 
     <TextView
         android:id="@+id/textView_welcome"

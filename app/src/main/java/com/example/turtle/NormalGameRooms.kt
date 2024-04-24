@@ -116,6 +116,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         val navController = rememberNavController()
 
 
+
                         if (state.rejectedPlayers.contains(FirebaseAuth.getInstance().uid)) {
                             AlertDialog(
                                 onDismissRequest = {
@@ -230,7 +231,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                         }
 
 
-                        if (!state.playerWon.isNullOrEmpty()) {
+                        if (!state.playerWon.isNullOrEmpty() || playerGame.value.size == lc) {
                             if (state.playerWon == currentUserId) {
                                 Toast.makeText(context, "Kazandınız, Tebrikler!", Toast.LENGTH_LONG).show()
                                 WinField(
@@ -275,7 +276,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                     }
                                 )
                             } else {
-                                Toast.makeText(context, "Kaybettiniz, Üzgünüm!", Toast.LENGTH_LONG).show()
+                                //Toast.makeText(context, "Kaybettiniz, Üzgünüm!", Toast.LENGTH_LONG).show()
                                 if (currentUserId != null) {
                                     WinField(
                                         playerWon = state.playerWon,
@@ -364,6 +365,7 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                     else -> 0
                                 }
                             var countdown by remember { mutableStateOf(60) }
+                            var finalCountdown by remember { mutableStateOf(-1) }
 
                             LaunchedEffect(key1 = countdown) {
                                 while (countdown > 0) {
@@ -449,14 +451,17 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             }
 
 
-
-
-
                             GameField(
                                     letterCount = lc,
                                     indexOfWord = playerGame.value.size,
                                     gameOfPlayer = playerGame,
+                                    timerValue = if(finalCountdown == -1) countdown else finalCountdown,
                                     playerScore = playerScore,
+                                    opponentScore = when(FirebaseAuth.getInstance().uid){
+                                        state.player1Id -> state.player2Score
+                                        state.player2Id -> state.player1Score
+                                        else -> 0
+                                    },
                                     opponentGame = opponentGame,
                                     playerWon = state.playerWon,
                                     randomCharIndex = if(state.randomCharIndex != -1) state.randomCharIndex else -1,
@@ -474,14 +479,57 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                                                 countdown = 60
                                             }
                                         }
-
-                                        Log.d("WordSelectionField", "Submitted word: $submittedText")
-                                        Log.d("WordSelectionField", "State: $state")
                                     }
-
-
                                 )
 
+                            LaunchedEffect (opponentGame){
+                                if(opponentGame.value.size == lc && finalCountdown == -1){
+                                    val playerGuess = playerGame.value.size
+                                    val extraTime = (lc-playerGuess) * 10
+
+                                    finalCountdown = extraTime
+                                }
+                            }
+                            LaunchedEffect(finalCountdown){
+                                while (finalCountdown > 0) {
+                                    delay(1000L)
+                                    if(finalCountdown % 5 == 0){
+                                        Toast.makeText(context, "Kelime tahmininiz için  $finalCountdown saniye kaldı", Toast.LENGTH_SHORT).show()
+                                    }
+                                    finalCountdown--
+                                }
+                            }
+
+                            LaunchedEffect (finalCountdown){
+                                val playerId = FirebaseAuth.getInstance().uid.toString()
+                                val opponentId = when(playerId){
+                                    state.player1Id -> state.player2Id
+                                    state.player2Id -> state.player1Id
+                                    else -> ""
+                                }
+                                val updatedOpponentScore = when(playerId){
+                                    state.player1Id -> state.player2Score
+                                    state.player2Id -> state.player1Score
+                                    else -> 0
+                                }
+                                val updatedPlayerScore = when(playerId){
+                                    state.player1Id -> state.player1Score
+                                    state.player2Id -> state.player2Score
+                                    else -> 0
+                                }
+                                if(finalCountdown == 0 || playerGame.value.size == lc){
+                                    if(updatedPlayerScore > updatedOpponentScore){
+                                        viewModel.playerWon(opponentId)
+                                    }
+                                    else if(updatedPlayerScore < updatedOpponentScore){
+                                        viewModel.playerWon(playerId)
+                                    }
+                                    else if(updatedPlayerScore == updatedOpponentScore){
+                                        viewModel.playerWon(playerId)
+                                    }
+
+                                }
+                            }
 
 
 
@@ -538,22 +586,14 @@ class NormalGameRooms : Fragment(R.layout.normal_game_rooms) {
                             WordSelectionField(letterCount = lc, randomLetter = randomLetter, randomCharIndex = randomLetterIndex) {
                                     submittedText ->
                                 val response = viewModel.setWordForOtherPlayer(submittedText,wordsList1)
-                                Log.d("WordSelectionField", "Submitted word: $submittedText")
-                                Log.d("WordSelectionField", "Server response: $response")
                                 if (!response) {
                                     Toast.makeText(context, "Lütfen geçerli bir kelime giriniz.", Toast.LENGTH_LONG).show()
                                 }
                                 else
                                     Toast.makeText(context, "Kelime gönderildi.Lütfen bekleyiniz", Toast.LENGTH_LONG).show()
-                                Log.d("WordSelectionField", "State: $state")
                             }
                             return@RoomsTheme
                         }
-
-
-
-
-
 
 
 
